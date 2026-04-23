@@ -169,6 +169,29 @@
   .name-cell { font-weight: 600; }
   .ct-cell   { color: var(--muted); font-size: 12px; }
 
+  /* ── Section divider ── */
+  .section-divider {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin: 32px 0 20px;
+  }
+  .section-divider::before,
+  .section-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .section-divider span {
+    font-size: 13px;
+    font-weight: 700;
+    color: #805ad5;
+    white-space: nowrap;
+    background: var(--bg);
+    padding: 0 12px;
+  }
+
   /* ── Footer ── */
   footer { text-align: center; font-size: 11px; color: var(--muted); margin-top: 28px; }
 </style>
@@ -293,8 +316,109 @@
   </table>
 </div>
 
+<!-- ══════════════════════════════════════════
+     SEÇÃO: COMPARATIVO 2025 × 2026
+══════════════════════════════════════════ -->
+<div class="section-divider">
+  <span>📅 Comparativo 2025 × 2026 — mesmo período</span>
+</div>
+
+<!-- KPI delta cards -->
+<div class="kpi-grid" style="margin-bottom:24px">
+  <div class="kpi" style="border-top-color:#805ad5">
+    <div class="kpi-label">Capex % — Março</div>
+    <div style="display:flex;align-items:flex-end;gap:10px">
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">2025</div>
+        <div class="kpi-value" style="color:var(--muted);font-size:22px">77%</div>
+      </div>
+      <div style="font-size:20px;color:var(--muted);padding-bottom:6px">→</div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">2026</div>
+        <div class="kpi-value" style="color:var(--capex);font-size:22px">67%</div>
+      </div>
+    </div>
+    <div class="kpi-sub" style="color:var(--opex);font-weight:700">▼ −10 p.p. vs 2025</div>
+  </div>
+  <div class="kpi" style="border-top-color:#805ad5">
+    <div class="kpi-label">Capex % — Abril</div>
+    <div style="display:flex;align-items:flex-end;gap:10px">
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">2025</div>
+        <div class="kpi-value" style="color:var(--muted);font-size:22px">70%</div>
+      </div>
+      <div style="font-size:20px;color:var(--muted);padding-bottom:6px">→</div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">2026</div>
+        <div class="kpi-value" style="color:var(--capex);font-size:22px">63%</div>
+      </div>
+    </div>
+    <div class="kpi-sub" style="color:var(--opex);font-weight:700">▼ −7 p.p. vs 2025</div>
+  </div>
+  <div class="kpi" style="border-top-color:#38a169">
+    <div class="kpi-label">CT Opex — Março</div>
+    <div style="display:flex;align-items:flex-end;gap:10px">
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">2025</div>
+        <div class="kpi-value" style="color:var(--muted);font-size:22px">6.8d</div>
+      </div>
+      <div style="font-size:20px;color:var(--muted);padding-bottom:6px">→</div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">2026</div>
+        <div class="kpi-value" style="color:#38a169;font-size:22px">1.3d</div>
+      </div>
+    </div>
+    <div class="kpi-sub" style="color:#38a169;font-weight:700">▲ −81% mais rápido</div>
+  </div>
+  <div class="kpi" style="border-top-color:#38a169">
+    <div class="kpi-label">CT Opex — Abril</div>
+    <div style="display:flex;align-items:flex-end;gap:10px">
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">2025</div>
+        <div class="kpi-value" style="color:var(--muted);font-size:22px">5.7d</div>
+      </div>
+      <div style="font-size:20px;color:var(--muted);padding-bottom:6px">→</div>
+      <div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:2px">2026</div>
+        <div class="kpi-value" style="color:#38a169;font-size:22px">3.0d</div>
+      </div>
+    </div>
+    <div class="kpi-sub" style="color:#38a169;font-weight:700">▲ −47% mais rápido</div>
+  </div>
+</div>
+
+<!-- Gráficos comparativos -->
+<div class="charts-grid" style="margin-bottom:20px">
+  <!-- Tendência anual 2025 + pontos 2026 -->
+  <div class="chart-card wide">
+    <div class="chart-title">Tendência anual Capex % — 2025 completo × pontos 2026</div>
+    <div class="chart-sub">Proporção mensal de Capex sobre o total de entregas · linha tracejada = 2026</div>
+    <div class="chart-wrap tall">
+      <canvas id="chartTendencia"></canvas>
+    </div>
+  </div>
+
+  <!-- Comparação grouped Mar/Abr -->
+  <div class="chart-card">
+    <div class="chart-title">Capex % — Mar e Abr: 2025 vs 2026</div>
+    <div class="chart-sub">Comparação direta no mesmo período dos dois anos</div>
+    <div class="chart-wrap">
+      <canvas id="chartComparacao"></canvas>
+    </div>
+  </div>
+
+  <!-- CT Opex mensal comparativo -->
+  <div class="chart-card">
+    <div class="chart-title">Cycle Time Opex mensal — 2025 × 2026</div>
+    <div class="chart-sub">2025: Criação→Resolução (JIRA) · 2026*: In-Progress→Done (Linear) · metodologias diferentes</div>
+    <div class="chart-wrap">
+      <canvas id="chartCTAnual"></canvas>
+    </div>
+  </div>
+</div>
+
 <footer>
-  Dados: cycle_time_ate_2026-04-22.xlsx · Capex = Feature + Improvement + Spike · Opex = Bug + Toil · Gerado em 23/04/2026
+  Dados 2026: cycle_time_ate_2026-04-22.xlsx (Linear) · Dados 2025: JIRA 2025.csv · Capex 2025 = História + Item Técnico + Melhoria + Evolução Técnica + Spike · Opex 2025 = Bug + Solicitação · Gerado em 23/04/2026
 </footer>
 
 <script>
@@ -493,6 +617,182 @@ new Chart(document.getElementById('chartCTType'), {
     scales: {
       x: { grid: { display: false }, ticks: { font: { size: 12 } } },
       y: { grid: { color: GRID_COLOR }, beginAtZero: true, ticks: { font: { size: 11 }, callback: v => v + ' d' } }
+    }
+  }
+});
+
+// ══════════════════════════════════════════
+// COMPARATIVO 2025 × 2026
+// Fonte 2025: JIRA 2025.csv (Capex + Opex)
+// Fonte 2026: cycle_time_ate_2026-04-22.xlsx
+// ══════════════════════════════════════════
+
+// Meses 2025 (Jan-Dez) — JIRA 2025.csv
+const meses2025 = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const capexPct2025 = [84, 89, 77, 70, 21, 19, 39, 28, 21, 19, 13, 7];
+const opexPct2025  = [16, 11, 23, 30, 79, 81, 62, 72, 79, 81, 87, 93];
+
+// Pontos 2026 — Linear (cycle_time_ate_2026-04-22.xlsx)
+const capexPct2026_trend = [null, null, 67, 63, null, null, null, null, null, null, null, null];
+
+// Cycle Time Opex mensal
+// 2025: criação → resolução (JIRA 2025.csv)
+// 2026: in-progress → done (cycle_time file) — metodologias diferentes
+const ctMeses    = ['Jan/25','Fev/25','Mar/25','Abr/25','Mai/25','Jun/25','Jul/25','Ago/25','Set/25','Out/25','Nov/25','Dez/25','Mar/26*','Abr/26*'];
+const ctOpex2025 = [2.5, 8.7, 6.8, 5.7, 7.8, 10.6, 10.9, 8.9, 8.3, 6.3, 9.3, 5.0, null, null];
+const ctOpex2026 = [null, null, null, null, null, null, null, null, null, null, null, null, 1.3, 3.0];
+
+// ── 6. Tendência Capex % anual ──
+new Chart(document.getElementById('chartTendencia'), {
+  type: 'line',
+  data: {
+    labels: meses2025,
+    datasets: [
+      {
+        label: 'Capex % 2025',
+        data: capexPct2025,
+        borderColor: CAPEX_COLOR,
+        backgroundColor: CAPEX_LIGHT,
+        fill: true,
+        tension: 0.35,
+        pointBackgroundColor: CAPEX_COLOR,
+        pointRadius: 5,
+        borderWidth: 2
+      },
+      {
+        label: 'Capex % 2026',
+        data: capexPct2026_trend,
+        borderColor: '#7c3aed',
+        backgroundColor: 'rgba(124,58,237,.12)',
+        fill: false,
+        tension: 0,
+        pointBackgroundColor: '#7c3aed',
+        pointRadius: 7,
+        borderWidth: 2.5,
+        borderDash: [6, 4],
+        spanGaps: false
+      }
+    ]
+  },
+  options: {
+    ...defaultOpts,
+    plugins: {
+      legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        callbacks: { label: ctx => ctx.raw != null ? `${ctx.dataset.label}: ${ctx.raw}%` : null }
+      },
+      annotation: {}
+    },
+    scales: {
+      x: { grid: { color: GRID_COLOR }, ticks: { font: { size: 11 } } },
+      y: {
+        min: 0, max: 100,
+        grid: { color: GRID_COLOR },
+        ticks: { font: { size: 11 }, callback: v => v + '%' }
+      }
+    }
+  }
+});
+
+// ── 7. Comparação grouped Mar/Abr ──
+new Chart(document.getElementById('chartComparacao'), {
+  type: 'bar',
+  data: {
+    labels: ['Março', 'Abril'],
+    datasets: [
+      {
+        label: '2025 — Capex %',
+        data: [77, 70],
+        backgroundColor: 'rgba(79,134,247,.5)',
+        borderColor: CAPEX_COLOR,
+        borderWidth: 2,
+        borderRadius: 5
+      },
+      {
+        label: '2026 — Capex %',
+        data: [67, 63],
+        backgroundColor: CAPEX_COLOR,
+        borderRadius: 5
+      },
+      {
+        label: '2025 — Opex %',
+        data: [23, 30],
+        backgroundColor: 'rgba(247,105,79,.5)',
+        borderColor: OPEX_COLOR,
+        borderWidth: 2,
+        borderRadius: 5
+      },
+      {
+        label: '2026 — Opex %',
+        data: [33, 37],
+        backgroundColor: OPEX_COLOR,
+        borderRadius: 5
+      }
+    ]
+  },
+  options: {
+    ...defaultOpts,
+    plugins: {
+      legend: { display: true, position: 'top', labels: { boxWidth: 10, font: { size: 10 } } },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        callbacks: { label: ctx => `${ctx.dataset.label}: ${ctx.raw}%` }
+      }
+    },
+    scales: {
+      x: { grid: { color: GRID_COLOR }, ticks: { font: { size: 12 } } },
+      y: { min: 0, max: 100, grid: { color: GRID_COLOR }, ticks: { font: { size: 11 }, callback: v => v + '%' } }
+    }
+  }
+});
+
+// ── 8. CT Opex mensal 2025 × 2026 ──
+new Chart(document.getElementById('chartCTAnual'), {
+  type: 'line',
+  data: {
+    labels: ctMeses,
+    datasets: [
+      {
+        label: 'CT Opex 2025 (d.u.)',
+        data: ctOpex2025,
+        borderColor: OPEX_COLOR,
+        backgroundColor: OPEX_LIGHT,
+        fill: false,
+        tension: 0.35,
+        pointBackgroundColor: OPEX_COLOR,
+        pointRadius: 5,
+        spanGaps: false
+      },
+      {
+        label: 'CT Opex 2026 (d.u.)',
+        data: ctOpex2026,
+        borderColor: '#7c3aed',
+        backgroundColor: 'rgba(124,58,237,.12)',
+        fill: false,
+        tension: 0,
+        pointBackgroundColor: '#7c3aed',
+        pointRadius: 7,
+        borderWidth: 2.5,
+        spanGaps: false
+      }
+    ]
+  },
+  options: {
+    ...defaultOpts,
+    plugins: {
+      legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
+      tooltip: {
+        mode: 'index',
+        intersect: false,
+        callbacks: { label: ctx => ctx.raw != null ? `${ctx.dataset.label}: ${ctx.raw} d` : null }
+      }
+    },
+    scales: {
+      x: { grid: { color: GRID_COLOR }, ticks: { font: { size: 10 } } },
+      y: { beginAtZero: true, grid: { color: GRID_COLOR }, ticks: { font: { size: 11 }, callback: v => v + ' d' } }
     }
   }
 });
