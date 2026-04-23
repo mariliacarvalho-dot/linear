@@ -192,6 +192,68 @@
     padding: 0 12px;
   }
 
+  /* ── Filtro de período ── */
+  .filter-bar {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 14px 20px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+    border-left: 4px solid #805ad5;
+  }
+  .filter-label {
+    font-size: 13px;
+    font-weight: 700;
+    color: #805ad5;
+    white-space: nowrap;
+  }
+  .filter-group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .filter-group label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+  }
+  .filter-group input[type="date"] {
+    font-family: inherit;
+    font-size: 13px;
+    padding: 5px 10px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    color: var(--text);
+    background: var(--bg);
+    cursor: pointer;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .filter-group input[type="date"]:focus { border-color: #805ad5; }
+  .btn-filtrar, .btn-limpar {
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 6px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    transition: opacity .2s;
+  }
+  .btn-filtrar { background: #805ad5; color: #fff; }
+  .btn-limpar  { background: var(--border); color: var(--muted); }
+  .btn-filtrar:hover, .btn-limpar:hover { opacity: .85; }
+  .filtro-info {
+    font-size: 12px;
+    color: #805ad5;
+    font-weight: 600;
+    margin-left: 4px;
+  }
+
   /* ── Footer ── */
   footer { text-align: center; font-size: 11px; color: var(--muted); margin-top: 28px; }
 </style>
@@ -210,34 +272,50 @@
 <div class="kpi-grid">
   <div class="kpi total">
     <div class="kpi-label">Total entregue</div>
-    <div class="kpi-value">71</div>
+    <div class="kpi-value" id="kpiTotal">—</div>
     <div class="kpi-sub">issues concluídas</div>
   </div>
   <div class="kpi capex">
     <div class="kpi-label">Capex</div>
-    <div class="kpi-value">44</div>
-    <div class="kpi-sub">62% do total</div>
+    <div class="kpi-value" id="kpiCapex">—</div>
+    <div class="kpi-sub" id="kpiCapexSub">—</div>
   </div>
   <div class="kpi opex">
     <div class="kpi-label">Opex</div>
-    <div class="kpi-value">25</div>
-    <div class="kpi-sub">35% do total</div>
+    <div class="kpi-value" id="kpiOpex">—</div>
+    <div class="kpi-sub" id="kpiOpexSub">—</div>
   </div>
   <div class="kpi ct">
     <div class="kpi-label">Cycle Time médio</div>
-    <div class="kpi-value">3,5</div>
+    <div class="kpi-value" id="kpiCT">—</div>
     <div class="kpi-sub">dias úteis (geral)</div>
   </div>
   <div class="kpi capex" style="border-top-color:#38a169">
     <div class="kpi-label">CT médio Capex</div>
-    <div class="kpi-value" style="color:#38a169">3,4</div>
+    <div class="kpi-value" style="color:#38a169" id="kpiCTCapex">—</div>
     <div class="kpi-sub">dias úteis</div>
   </div>
   <div class="kpi opex" style="border-top-color:#dd6b20">
     <div class="kpi-label">CT médio Opex</div>
-    <div class="kpi-value" style="color:#dd6b20">2,8</div>
+    <div class="kpi-value" style="color:#dd6b20" id="kpiCTOpex">—</div>
     <div class="kpi-sub">dias úteis</div>
   </div>
+</div>
+
+<!-- Filtro de período -->
+<div class="filter-bar">
+  <span class="filter-label">🗓 Filtrar período (2026):</span>
+  <div class="filter-group">
+    <label>De</label>
+    <input type="date" id="dataInicio" value="2026-03-30" min="2026-03-30" max="2026-04-26">
+  </div>
+  <div class="filter-group">
+    <label>Até</label>
+    <input type="date" id="dataFim" value="2026-04-26" min="2026-03-30" max="2026-04-26">
+  </div>
+  <button class="btn-filtrar" onclick="applyFilter()">Aplicar</button>
+  <button class="btn-limpar" onclick="resetFilter()">Limpar</button>
+  <span id="filtroInfo" class="filtro-info"></span>
 </div>
 
 <!-- Legend -->
@@ -265,6 +343,33 @@
     <div class="chart-wrap">
       <canvas id="chartCT"></canvas>
     </div>
+  </div>
+
+  <!-- Tabela semanal combinada -->
+  <div class="chart-card wide">
+    <div class="chart-title">Resumo semanal — Quantidade × Cycle Time</div>
+    <div class="chart-sub">Visão consolidada semana a semana · d.u. = dias úteis · CT = média do ciclo In Progress → Done</div>
+    <table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:4px">
+      <thead>
+        <tr>
+          <th rowspan="2" style="text-align:left;padding:8px 12px;border-bottom:2px solid var(--border);font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);vertical-align:bottom">Semana</th>
+          <th colspan="2" style="text-align:center;padding:6px 12px 2px;border-bottom:1px solid var(--capex);font-size:11px;font-weight:700;color:var(--capex);text-transform:uppercase;letter-spacing:.4px">Capex</th>
+          <th colspan="2" style="text-align:center;padding:6px 12px 2px;border-bottom:1px solid var(--opex);font-size:11px;font-weight:700;color:var(--opex);text-transform:uppercase;letter-spacing:.4px">Opex</th>
+          <th colspan="3" style="text-align:center;padding:6px 12px 2px;border-bottom:1px solid var(--border);font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:.4px">Total</th>
+        </tr>
+        <tr>
+          <th style="text-align:center;padding:4px 12px 8px;border-bottom:2px solid var(--border);font-size:11px;font-weight:600;color:var(--muted)">Qtd</th>
+          <th style="text-align:center;padding:4px 12px 8px;border-bottom:2px solid var(--border);font-size:11px;font-weight:600;color:var(--muted)">CT médio</th>
+          <th style="text-align:center;padding:4px 12px 8px;border-bottom:2px solid var(--border);font-size:11px;font-weight:600;color:var(--muted)">Qtd</th>
+          <th style="text-align:center;padding:4px 12px 8px;border-bottom:2px solid var(--border);font-size:11px;font-weight:600;color:var(--muted)">CT médio</th>
+          <th style="text-align:center;padding:4px 12px 8px;border-bottom:2px solid var(--border);font-size:11px;font-weight:600;color:var(--muted)">Qtd</th>
+          <th style="text-align:center;padding:4px 12px 8px;border-bottom:2px solid var(--border);font-size:11px;font-weight:600;color:var(--muted)">% Capex</th>
+          <th style="text-align:center;padding:4px 12px 8px;border-bottom:2px solid var(--border);font-size:11px;font-weight:600;color:var(--muted)">Barra</th>
+        </tr>
+      </thead>
+      <tbody id="tabelaSemanal"></tbody>
+      <tfoot id="tabelaSemanalFoot"></tfoot>
+    </table>
   </div>
 
   <!-- Row 2: Stacked proportion + Produto -->
@@ -295,26 +400,6 @@
   </div>
 </div>
 
-<!-- Tabela pessoas -->
-<div class="table-card">
-  <div class="table-title">Breakdown por pessoa</div>
-  <div class="table-sub">Capex × Opex entregues e cycle time médio por membro do time</div>
-  <table>
-    <thead>
-      <tr>
-        <th>Pessoa</th>
-        <th>Total</th>
-        <th>Capex</th>
-        <th>Opex</th>
-        <th>Foco predominante</th>
-        <th>CT médio Capex (d.u.)</th>
-        <th>CT médio Opex (d.u.)</th>
-        <th>Distribuição</th>
-      </tr>
-    </thead>
-    <tbody id="tabelaPessoas"></tbody>
-  </table>
-</div>
 
 <!-- ══════════════════════════════════════════
      SEÇÃO: COMPARATIVO 2025 × 2026
@@ -428,29 +513,12 @@ const CAPEX_LIGHT  = 'rgba(79,134,247,.15)';
 const OPEX_LIGHT   = 'rgba(247,105,79,.15)';
 const GRID_COLOR   = 'rgba(0,0,0,.06)';
 
-const weeks = ['Sem 30/03', 'Sem 06/04', 'Sem 13/04', 'Sem 20/04'];
-
-// ── Raw data ──
-const capexCount = [13, 13,  9,  9];
-const opexCount  = [13,  7,  3,  2];
-const ctCapex    = [1.8, 3.9, 5.0, 4.4];
-const ctOpex     = [2.2, 4.3, 3.0, 1.0];
-
-const produtos = ['Customizador', 'Gestor - Est.', 'Árvore de col.'];
-const prodCapex = [29, 12, 3];
-const prodOpex  = [13,  5, 7];
-
-const issueTypes     = ['Bug', 'Improvement', 'Feature', 'Spike', 'Toil'];
-const ctByType       = [2.8, 3.2, 5.7, 4.0, 2.5];
-const typeColors     = [OPEX_COLOR, CAPEX_COLOR, '#7c3aed', '#0891b2', '#d97706'];
-
-const pessoas = [
-  { nome: 'ivan.ribeiro',        capex: 22, opex: 1,  ctCapex: 3.2, ctOpex: 4.0 },
-  { nome: 'joao.teixeira',       capex: 12, opex: 0,  ctCapex: 3.6, ctOpex: null },
-  { nome: 'Gildo Duarte',        capex: 3,  opex: 10, ctCapex: 3.3, ctOpex: 2.5 },
-  { nome: 'gibran.tavares',      capex: 3,  opex: 9,  ctCapex: 4.3, ctOpex: 2.7 },
-  { nome: 'Ivonir Mathias Neto', capex: 3,  opex: 5,  ctCapex: 2.3, ctOpex: 2.4 },
-  { nome: 'Verner E. Pereira',   capex: 1,  opex: 0,  ctCapex: 3.0, ctOpex: null },
+// ── Dataset completo semanal com datas reais ──
+const ALL_WEEKS = [
+  { label: 'Sem 30/03', dateStart: '2026-03-30', dateEnd: '2026-04-05', capexQtd: 13, opexQtd: 13, capexCT: 1.8, opexCT: 2.2 },
+  { label: 'Sem 06/04', dateStart: '2026-04-06', dateEnd: '2026-04-12', capexQtd: 13, opexQtd:  7, capexCT: 3.9, opexCT: 4.3 },
+  { label: 'Sem 13/04', dateStart: '2026-04-13', dateEnd: '2026-04-19', capexQtd:  9, opexQtd:  3, capexCT: 5.0, opexCT: 3.0 },
+  { label: 'Sem 20/04', dateStart: '2026-04-20', dateEnd: '2026-04-26', capexQtd:  9, opexQtd:  2, capexCT: 4.4, opexCT: 1.0 },
 ];
 
 // ── Helpers ──
@@ -467,89 +535,39 @@ const defaultOpts = {
   }
 };
 
-// ── 1. Volume chart ──
-new Chart(document.getElementById('chartVolume'), {
+// ── Instâncias dos gráficos reativos ──
+const chartVolume = new Chart(document.getElementById('chartVolume'), {
   type: 'bar',
-  data: {
-    labels: weeks,
-    datasets: [
-      { label: 'Capex', data: capexCount, backgroundColor: CAPEX_COLOR, borderRadius: 5, borderSkipped: false },
-      { label: 'Opex',  data: opexCount,  backgroundColor: OPEX_COLOR,  borderRadius: 5, borderSkipped: false }
-    ]
-  },
+  data: { labels: [], datasets: [
+    { label: 'Capex', data: [], backgroundColor: CAPEX_COLOR, borderRadius: 5, borderSkipped: false },
+    { label: 'Opex',  data: [], backgroundColor: OPEX_COLOR,  borderRadius: 5, borderSkipped: false }
+  ]},
   options: {
     ...defaultOpts,
-    plugins: {
-      legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
-      tooltip: { mode: 'index', intersect: false }
-    },
-    scales: {
-      ...defaultOpts.scales,
-      y: { ...defaultOpts.scales.y, beginAtZero: true, ticks: { stepSize: 4, font: { size: 11 } } }
-    }
+    plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 11 } } }, tooltip: { mode: 'index', intersect: false } },
+    scales: { ...defaultOpts.scales, y: { ...defaultOpts.scales.y, beginAtZero: true, ticks: { stepSize: 4, font: { size: 11 } } } }
   }
 });
 
-// ── 2. Cycle Time chart ──
-new Chart(document.getElementById('chartCT'), {
+const chartCT = new Chart(document.getElementById('chartCT'), {
   type: 'line',
-  data: {
-    labels: weeks,
-    datasets: [
-      {
-        label: 'Capex CT',
-        data: ctCapex,
-        borderColor: CAPEX_COLOR,
-        backgroundColor: CAPEX_LIGHT,
-        fill: true,
-        tension: 0.35,
-        pointBackgroundColor: CAPEX_COLOR,
-        pointRadius: 5
-      },
-      {
-        label: 'Opex CT',
-        data: ctOpex,
-        borderColor: OPEX_COLOR,
-        backgroundColor: OPEX_LIGHT,
-        fill: true,
-        tension: 0.35,
-        pointBackgroundColor: OPEX_COLOR,
-        pointRadius: 5
-      }
-    ]
-  },
+  data: { labels: [], datasets: [
+    { label: 'Capex CT', data: [], borderColor: CAPEX_COLOR, backgroundColor: CAPEX_LIGHT, fill: true, tension: 0.35, pointBackgroundColor: CAPEX_COLOR, pointRadius: 5 },
+    { label: 'Opex CT',  data: [], borderColor: OPEX_COLOR,  backgroundColor: OPEX_LIGHT,  fill: true, tension: 0.35, pointBackgroundColor: OPEX_COLOR,  pointRadius: 5 }
+  ]},
   options: {
     ...defaultOpts,
-    plugins: {
-      legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
-      tooltip: { mode: 'index', intersect: false }
-    },
-    scales: {
-      ...defaultOpts.scales,
-      y: { ...defaultOpts.scales.y, beginAtZero: true, ticks: { font: { size: 11 }, callback: v => v + ' d' } }
-    }
+    plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 11 } } }, tooltip: { mode: 'index', intersect: false } },
+    scales: { ...defaultOpts.scales, y: { ...defaultOpts.scales.y, beginAtZero: true, ticks: { font: { size: 11 }, callback: v => v + ' d' } } }
   }
 });
 
-// ── 3. Proporção stacked 100% ──
-const capexPct = weeks.map((_, i) => {
-  const tot = capexCount[i] + opexCount[i];
-  return +(capexCount[i] / tot * 100).toFixed(1);
-});
-const opexPct = weeks.map((_, i) => {
-  const tot = capexCount[i] + opexCount[i];
-  return +(opexCount[i] / tot * 100).toFixed(1);
-});
-
-new Chart(document.getElementById('chartProporcao'), {
+const chartProporcao = new Chart(document.getElementById('chartProporcao'), {
   type: 'bar',
-  data: {
-    labels: weeks,
-    datasets: [
-      { label: 'Capex %', data: capexPct, backgroundColor: CAPEX_COLOR, borderRadius: 0, stack: 's' },
-      { label: 'Opex %',  data: opexPct,  backgroundColor: OPEX_COLOR,  borderRadius: 0, stack: 's' }
-    ]
-  },
+  data: { labels: [], datasets: [
+    { label: 'Capex %', data: [], backgroundColor: CAPEX_COLOR, borderRadius: 0, stack: 's' },
+    { label: 'Opex %',  data: [], backgroundColor: OPEX_COLOR,  borderRadius: 0, stack: 's' }
+  ]},
   options: {
     ...defaultOpts,
     plugins: {
@@ -572,7 +590,11 @@ new Chart(document.getElementById('chartProporcao'), {
   }
 });
 
-// ── 4. Produto horizontal bar ──
+// ── 4. Produto horizontal bar (estático) ──
+const produtos = ['Customizador', 'Gestor - Est.', 'Árvore de col.'];
+const prodCapex = [29, 12, 3];
+const prodOpex  = [13,  5, 7];
+
 new Chart(document.getElementById('chartProduto'), {
   type: 'bar',
   data: {
@@ -585,10 +607,7 @@ new Chart(document.getElementById('chartProduto'), {
   options: {
     ...defaultOpts,
     indexAxis: 'y',
-    plugins: {
-      legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 11 } } },
-      tooltip: { mode: 'index', intersect: false }
-    },
+    plugins: { legend: { display: true, position: 'top', labels: { boxWidth: 12, font: { size: 11 } } }, tooltip: { mode: 'index', intersect: false } },
     scales: {
       x: { grid: { color: GRID_COLOR }, beginAtZero: true, ticks: { stepSize: 5, font: { size: 11 } } },
       y: { grid: { display: false }, ticks: { font: { size: 11 } } }
@@ -596,30 +615,161 @@ new Chart(document.getElementById('chartProduto'), {
   }
 });
 
-// ── 5. CT by Issue Type ──
+// ── 5. CT by Issue Type (estático) ──
+const issueTypes = ['Bug', 'Improvement', 'Feature', 'Spike', 'Toil'];
+const ctByType   = [2.8, 3.2, 5.7, 4.0, 2.5];
+const typeColors = [OPEX_COLOR, CAPEX_COLOR, '#7c3aed', '#0891b2', '#d97706'];
+
 new Chart(document.getElementById('chartCTType'), {
   type: 'bar',
   data: {
     labels: issueTypes,
-    datasets: [{
-      label: 'CT médio (d.u.)',
-      data: ctByType,
-      backgroundColor: typeColors,
-      borderRadius: 5
-    }]
+    datasets: [{ label: 'CT médio (d.u.)', data: ctByType, backgroundColor: typeColors, borderRadius: 5 }]
   },
   options: {
     ...defaultOpts,
-    plugins: {
-      legend: { display: false },
-      tooltip: { callbacks: { label: ctx => `CT médio: ${ctx.raw} d.u.` } }
-    },
+    plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => `CT médio: ${ctx.raw} d.u.` } } },
     scales: {
       x: { grid: { display: false }, ticks: { font: { size: 12 } } },
       y: { grid: { color: GRID_COLOR }, beginAtZero: true, ticks: { font: { size: 11 }, callback: v => v + ' d' } }
     }
   }
 });
+
+// ══════════════════════════════════════════
+// FUNÇÕES REATIVAS — filtro de período
+// ══════════════════════════════════════════
+
+function renderWeekly(data) {
+  const labels     = data.map(w => w.label);
+  const capexCounts = data.map(w => w.capexQtd);
+  const opexCounts  = data.map(w => w.opexQtd);
+  const capexCTs    = data.map(w => w.capexCT);
+  const opexCTs     = data.map(w => w.opexCT);
+  const capexPcts   = data.map(w => +((w.capexQtd / (w.capexQtd + w.opexQtd)) * 100).toFixed(1));
+  const opexPcts    = data.map(w => +((w.opexQtd  / (w.capexQtd + w.opexQtd)) * 100).toFixed(1));
+
+  // Atualiza gráfico Volume
+  chartVolume.data.labels = labels;
+  chartVolume.data.datasets[0].data = capexCounts;
+  chartVolume.data.datasets[1].data = opexCounts;
+  chartVolume.update();
+
+  // Atualiza gráfico CT
+  chartCT.data.labels = labels;
+  chartCT.data.datasets[0].data = capexCTs;
+  chartCT.data.datasets[1].data = opexCTs;
+  chartCT.update();
+
+  // Atualiza gráfico Proporção
+  chartProporcao.data.labels = labels;
+  chartProporcao.data.datasets[0].data = capexPcts;
+  chartProporcao.data.datasets[1].data = opexPcts;
+  chartProporcao.update();
+
+  // Atualiza KPI cards de resumo
+  const totC = capexCounts.reduce((a,b) => a+b, 0);
+  const totO = opexCounts.reduce((a,b)  => a+b, 0);
+  const tot  = totC + totO;
+  const avgCT = tot > 0 ? (data.reduce((a,w) => a + (w.capexQtd*w.capexCT + w.opexQtd*w.opexCT), 0) / tot).toFixed(1) : '—';
+  const avgCtC = totC > 0 ? (data.reduce((a,w) => a + w.capexQtd*w.capexCT, 0) / totC).toFixed(1) : '—';
+  const avgCtO = totO > 0 ? (data.reduce((a,w) => a + w.opexQtd*w.opexCT,  0) / totO).toFixed(1) : '—';
+
+  document.getElementById('kpiTotal').textContent  = tot;
+  document.getElementById('kpiCapex').textContent  = totC;
+  document.getElementById('kpiCapexSub').textContent = tot > 0 ? Math.round(totC/tot*100) + '% do total' : '—';
+  document.getElementById('kpiOpex').textContent   = totO;
+  document.getElementById('kpiOpexSub').textContent  = tot > 0 ? Math.round(totO/tot*100) + '% do total' : '—';
+  document.getElementById('kpiCT').textContent     = avgCT.toString().replace('.',',');
+  document.getElementById('kpiCTCapex').textContent = avgCtC.toString().replace('.',',');
+  document.getElementById('kpiCTOpex').textContent  = avgCtO.toString().replace('.',',');
+
+  // Atualiza tabela semanal
+  const tbSem  = document.getElementById('tabelaSemanal');
+  const tbFoot = document.getElementById('tabelaSemanalFoot');
+  tbSem.innerHTML  = '';
+  tbFoot.innerHTML = '';
+
+  let totCapexQtd = 0, totOpexQtd = 0, sumCapexCTw = 0, sumOpexCTw = 0;
+
+  data.forEach((w, i) => {
+    const total  = w.capexQtd + w.opexQtd;
+    const pct    = Math.round(w.capexQtd / total * 100);
+    totCapexQtd += w.capexQtd; totOpexQtd += w.opexQtd;
+    sumCapexCTw += w.capexCT;  sumOpexCTw += w.opexCT;
+    const bg = i % 2 === 1 ? 'background:#f7fafc' : '';
+    tbSem.insertAdjacentHTML('beforeend', `
+      <tr style="${bg}">
+        <td style="padding:10px 12px;border-bottom:1px solid var(--border);font-weight:700">${w.label}</td>
+        <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--border)"><span class="pill capex">${w.capexQtd}</span></td>
+        <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--border);color:var(--capex);font-weight:600">${w.capexCT.toFixed(1)} d</td>
+        <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--border)"><span class="pill opex">${w.opexQtd}</span></td>
+        <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--border);color:var(--opex);font-weight:600">${w.opexCT.toFixed(1)} d</td>
+        <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--border);font-weight:700">${total}</td>
+        <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--border);font-weight:600;color:#805ad5">${pct}%</td>
+        <td style="padding:10px 12px;border-bottom:1px solid var(--border)">
+          <div style="display:flex;align-items:center;gap:3px;min-width:120px">
+            <div style="height:10px;width:${pct*1.2}px;background:var(--capex);border-radius:3px 0 0 3px;min-width:${w.capexQtd>0?4:0}px"></div>
+            <div style="height:10px;width:${(100-pct)*1.2}px;background:var(--opex);border-radius:0 3px 3px 0;min-width:${w.opexQtd>0?4:0}px"></div>
+            <span style="font-size:10px;color:var(--muted);margin-left:4px">${pct}C / ${100-pct}O</span>
+          </div>
+        </td>
+      </tr>`);
+  });
+
+  const totTotal = totCapexQtd + totOpexQtd;
+  const totPct   = totTotal > 0 ? Math.round(totCapexQtd / totTotal * 100) : 0;
+  const avgCTCf  = data.length > 0 ? (sumCapexCTw / data.length).toFixed(1) : '—';
+  const avgCTOf  = data.length > 0 ? (sumOpexCTw  / data.length).toFixed(1) : '—';
+  tbFoot.insertAdjacentHTML('beforeend', `
+    <tr style="background:#f0f4fa;font-weight:700">
+      <td style="padding:10px 12px;border-top:2px solid var(--border)">Total / Média</td>
+      <td style="text-align:center;padding:10px 12px;border-top:2px solid var(--border)"><span class="pill capex">${totCapexQtd}</span></td>
+      <td style="text-align:center;padding:10px 12px;border-top:2px solid var(--border);color:var(--capex)">${avgCTCf} d</td>
+      <td style="text-align:center;padding:10px 12px;border-top:2px solid var(--border)"><span class="pill opex">${totOpexQtd}</span></td>
+      <td style="text-align:center;padding:10px 12px;border-top:2px solid var(--border);color:var(--opex)">${avgCTOf} d</td>
+      <td style="text-align:center;padding:10px 12px;border-top:2px solid var(--border)">${totTotal}</td>
+      <td style="text-align:center;padding:10px 12px;border-top:2px solid var(--border);color:#805ad5">${totPct}%</td>
+      <td style="padding:10px 12px;border-top:2px solid var(--border)">
+        <div style="display:flex;align-items:center;gap:3px;min-width:120px">
+          <div style="height:10px;width:${totPct*1.2}px;background:var(--capex);border-radius:3px 0 0 3px"></div>
+          <div style="height:10px;width:${(100-totPct)*1.2}px;background:var(--opex);border-radius:0 3px 3px 0"></div>
+          <span style="font-size:10px;color:var(--muted);margin-left:4px">${totPct}C / ${100-totPct}O</span>
+        </div>
+      </td>
+    </tr>`);
+}
+
+function applyFilter() {
+  const ini = document.getElementById('dataInicio').value;
+  const fim = document.getElementById('dataFim').value;
+  if (!ini || !fim || ini > fim) {
+    alert('Selecione um período válido (Data Início ≤ Data Fim).');
+    return;
+  }
+  const filtered = ALL_WEEKS.filter(w => w.dateStart >= ini && w.dateEnd <= fim);
+  if (filtered.length === 0) {
+    alert('Nenhuma semana encontrada no período selecionado.');
+    return;
+  }
+  renderWeekly(filtered);
+  const fmt = d => d.split('-').reverse().join('/');
+  document.getElementById('filtroInfo').textContent =
+    `● ${filtered.length} semana(s) · ${fmt(ini)} → ${fmt(fim)}`;
+  document.querySelector('.badge').textContent =
+    `${fmt(ini)} — ${fmt(fim)}`;
+}
+
+function resetFilter() {
+  document.getElementById('dataInicio').value = '2026-03-30';
+  document.getElementById('dataFim').value    = '2026-04-26';
+  renderWeekly(ALL_WEEKS);
+  document.getElementById('filtroInfo').textContent = '';
+  document.querySelector('.badge').textContent = 'Mar/26 — Abr/26';
+}
+
+// Renderiza com todos os dados ao carregar
+renderWeekly(ALL_WEEKS);
 
 // ══════════════════════════════════════════
 // COMPARATIVO 2025 × 2026
@@ -797,35 +947,7 @@ new Chart(document.getElementById('chartCTAnual'), {
   }
 });
 
-// ── Tabela de pessoas ──
-const tbody = document.getElementById('tabelaPessoas');
-pessoas.forEach(p => {
-  const total = p.capex + p.opex;
-  const pct   = total > 0 ? Math.round(p.capex / total * 100) : 0;
-  const foco  = p.capex >= p.opex
-    ? `<span class="pill capex">Capex</span>`
-    : `<span class="pill opex">Opex</span>`;
-  const ctC = p.ctCapex != null ? p.ctCapex.toFixed(1) + ' d' : '—';
-  const ctO = p.ctOpex  != null ? p.ctOpex.toFixed(1)  + ' d' : '—';
-  const bar = `
-    <div style="display:flex;align-items:center;gap:4px;min-width:140px">
-      <span class="bar-inline" style="width:${pct}%;background:var(--capex);max-width:80px;min-width:4px"></span>
-      <span class="bar-inline" style="width:${100-pct}%;background:var(--opex);max-width:80px;min-width:${p.opex>0?4:0}px"></span>
-      <span style="font-size:11px;color:var(--muted);margin-left:4px">${pct}% C</span>
-    </div>`;
-  tbody.insertAdjacentHTML('beforeend', `
-    <tr>
-      <td class="name-cell">${p.nome.replace('@arcotech.io','')}</td>
-      <td><strong>${total}</strong></td>
-      <td><span class="pill capex">${p.capex}</span></td>
-      <td><span class="pill opex">${p.opex}</span></td>
-      <td>${foco}</td>
-      <td class="ct-cell">${ctC}</td>
-      <td class="ct-cell">${ctO}</td>
-      <td>${bar}</td>
-    </tr>
-  `);
-});
+
 </script>
 </body>
 </html>
