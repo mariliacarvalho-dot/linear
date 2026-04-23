@@ -514,11 +514,13 @@ const OPEX_LIGHT   = 'rgba(247,105,79,.15)';
 const GRID_COLOR   = 'rgba(0,0,0,.06)';
 
 // ── Dataset completo semanal com datas reais ──
+// outroQtd = itens com Issue Type não classificável (Frontend/Backend)
+// LMSGC-35 (Frontend, CT 7d) e LMSGC-34 (Backend, CT 9d) → semana 06/04
 const ALL_WEEKS = [
-  { label: 'Sem 30/03', dateStart: '2026-03-30', dateEnd: '2026-04-05', capexQtd: 13, opexQtd: 13, capexCT: 1.8, opexCT: 2.2 },
-  { label: 'Sem 06/04', dateStart: '2026-04-06', dateEnd: '2026-04-12', capexQtd: 13, opexQtd:  7, capexCT: 3.9, opexCT: 4.3 },
-  { label: 'Sem 13/04', dateStart: '2026-04-13', dateEnd: '2026-04-19', capexQtd:  9, opexQtd:  3, capexCT: 5.0, opexCT: 3.0 },
-  { label: 'Sem 20/04', dateStart: '2026-04-20', dateEnd: '2026-04-26', capexQtd:  9, opexQtd:  2, capexCT: 4.4, opexCT: 1.0 },
+  { label: 'Sem 30/03', dateStart: '2026-03-30', dateEnd: '2026-04-05', capexQtd: 13, opexQtd: 13, outroQtd: 0, capexCT: 1.8, opexCT: 2.2 },
+  { label: 'Sem 06/04', dateStart: '2026-04-06', dateEnd: '2026-04-12', capexQtd: 13, opexQtd:  7, outroQtd: 2, capexCT: 3.9, opexCT: 4.3 },
+  { label: 'Sem 13/04', dateStart: '2026-04-13', dateEnd: '2026-04-19', capexQtd:  9, opexQtd:  3, outroQtd: 0, capexCT: 5.0, opexCT: 3.0 },
+  { label: 'Sem 20/04', dateStart: '2026-04-20', dateEnd: '2026-04-26', capexQtd:  9, opexQtd:  2, outroQtd: 0, capexCT: 4.4, opexCT: 1.0 },
 ];
 
 // ── Helpers ──
@@ -668,21 +670,22 @@ function renderWeekly(data) {
   chartProporcao.update();
 
   // Atualiza KPI cards de resumo
-  const totC = capexCounts.reduce((a,b) => a+b, 0);
-  const totO = opexCounts.reduce((a,b)  => a+b, 0);
-  const tot  = totC + totO;
-  const avgCT = tot > 0 ? (data.reduce((a,w) => a + (w.capexQtd*w.capexCT + w.opexQtd*w.opexCT), 0) / tot).toFixed(1) : '—';
-  const avgCtC = totC > 0 ? (data.reduce((a,w) => a + w.capexQtd*w.capexCT, 0) / totC).toFixed(1) : '—';
-  const avgCtO = totO > 0 ? (data.reduce((a,w) => a + w.opexQtd*w.opexCT,  0) / totO).toFixed(1) : '—';
+  const totC    = capexCounts.reduce((a,b) => a+b, 0);
+  const totO    = opexCounts.reduce((a,b)  => a+b, 0);
+  const totOutro = data.reduce((a,w) => a + (w.outroQtd||0), 0);
+  const tot     = totC + totO + totOutro;   // total real = 71
+  const avgCT   = tot > 0 ? (data.reduce((a,w) => a + (w.capexQtd*w.capexCT + w.opexQtd*w.opexCT), 0) / (totC+totO)).toFixed(1) : '—';
+  const avgCtC  = totC > 0 ? (data.reduce((a,w) => a + w.capexQtd*w.capexCT, 0) / totC).toFixed(1) : '—';
+  const avgCtO  = totO > 0 ? (data.reduce((a,w) => a + w.opexQtd*w.opexCT,  0) / totO).toFixed(1) : '—';
 
-  document.getElementById('kpiTotal').textContent  = tot;
-  document.getElementById('kpiCapex').textContent  = totC;
+  document.getElementById('kpiTotal').textContent   = tot;
+  document.getElementById('kpiCapex').textContent   = totC;
   document.getElementById('kpiCapexSub').textContent = tot > 0 ? Math.round(totC/tot*100) + '% do total' : '—';
-  document.getElementById('kpiOpex').textContent   = totO;
+  document.getElementById('kpiOpex').textContent    = totO;
   document.getElementById('kpiOpexSub').textContent  = tot > 0 ? Math.round(totO/tot*100) + '% do total' : '—';
-  document.getElementById('kpiCT').textContent     = avgCT.toString().replace('.',',');
-  document.getElementById('kpiCTCapex').textContent = avgCtC.toString().replace('.',',');
-  document.getElementById('kpiCTOpex').textContent  = avgCtO.toString().replace('.',',');
+  document.getElementById('kpiCT').textContent      = avgCT.toString().replace('.',',');
+  document.getElementById('kpiCTCapex').textContent  = avgCtC.toString().replace('.',',');
+  document.getElementById('kpiCTOpex').textContent   = avgCtO.toString().replace('.',',');
 
   // Atualiza tabela semanal
   const tbSem  = document.getElementById('tabelaSemanal');
@@ -692,12 +695,18 @@ function renderWeekly(data) {
 
   let totCapexQtd = 0, totOpexQtd = 0, sumCapexCTw = 0, sumOpexCTw = 0;
 
+  let totOutroQtd = 0;
   data.forEach((w, i) => {
-    const total  = w.capexQtd + w.opexQtd;
-    const pct    = Math.round(w.capexQtd / total * 100);
-    totCapexQtd += w.capexQtd; totOpexQtd += w.opexQtd;
+    const outro  = w.outroQtd || 0;
+    const total  = w.capexQtd + w.opexQtd + outro;
+    const baseClassif = w.capexQtd + w.opexQtd;
+    const pct    = baseClassif > 0 ? Math.round(w.capexQtd / baseClassif * 100) : 0;
+    totCapexQtd += w.capexQtd; totOpexQtd += w.opexQtd; totOutroQtd += outro;
     sumCapexCTw += w.capexCT;  sumOpexCTw += w.opexCT;
     const bg = i % 2 === 1 ? 'background:#f7fafc' : '';
+    const outroTag = outro > 0
+      ? `<span title="2 itens com Issue Type não classificado (Frontend/Backend)" style="display:inline-block;margin-left:4px;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:700;background:#f0e6ff;color:#805ad5;cursor:help">+${outro} ⚠️</span>`
+      : '';
     tbSem.insertAdjacentHTML('beforeend', `
       <tr style="${bg}">
         <td style="padding:10px 12px;border-bottom:1px solid var(--border);font-weight:700">${w.label}</td>
@@ -705,7 +714,7 @@ function renderWeekly(data) {
         <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--border);color:var(--capex);font-weight:600">${w.capexCT.toFixed(1)} d</td>
         <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--border)"><span class="pill opex">${w.opexQtd}</span></td>
         <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--border);color:var(--opex);font-weight:600">${w.opexCT.toFixed(1)} d</td>
-        <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--border);font-weight:700">${total}</td>
+        <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--border);font-weight:700">${total}${outroTag}</td>
         <td style="text-align:center;padding:10px 12px;border-bottom:1px solid var(--border);font-weight:600;color:#805ad5">${pct}%</td>
         <td style="padding:10px 12px;border-bottom:1px solid var(--border)">
           <div style="display:flex;align-items:center;gap:3px;min-width:120px">
@@ -717,10 +726,13 @@ function renderWeekly(data) {
       </tr>`);
   });
 
-  const totTotal = totCapexQtd + totOpexQtd;
-  const totPct   = totTotal > 0 ? Math.round(totCapexQtd / totTotal * 100) : 0;
+  const totTotal = totCapexQtd + totOpexQtd + totOutroQtd;
+  const totPct   = (totCapexQtd + totOpexQtd) > 0 ? Math.round(totCapexQtd / (totCapexQtd + totOpexQtd) * 100) : 0;
   const avgCTCf  = data.length > 0 ? (sumCapexCTw / data.length).toFixed(1) : '—';
   const avgCTOf  = data.length > 0 ? (sumOpexCTw  / data.length).toFixed(1) : '—';
+  const outroFootNote = totOutroQtd > 0
+    ? `<span title="Itens com Issue Type não classificado (Frontend/Backend)" style="display:inline-block;margin-left:4px;padding:1px 6px;border-radius:10px;font-size:10px;font-weight:700;background:#f0e6ff;color:#805ad5;cursor:help">+${totOutroQtd} ⚠️</span>`
+    : '';
   tbFoot.insertAdjacentHTML('beforeend', `
     <tr style="background:#f0f4fa;font-weight:700">
       <td style="padding:10px 12px;border-top:2px solid var(--border)">Total / Média</td>
@@ -728,7 +740,7 @@ function renderWeekly(data) {
       <td style="text-align:center;padding:10px 12px;border-top:2px solid var(--border);color:var(--capex)">${avgCTCf} d</td>
       <td style="text-align:center;padding:10px 12px;border-top:2px solid var(--border)"><span class="pill opex">${totOpexQtd}</span></td>
       <td style="text-align:center;padding:10px 12px;border-top:2px solid var(--border);color:var(--opex)">${avgCTOf} d</td>
-      <td style="text-align:center;padding:10px 12px;border-top:2px solid var(--border)">${totTotal}</td>
+      <td style="text-align:center;padding:10px 12px;border-top:2px solid var(--border)">${totTotal}${outroFootNote}</td>
       <td style="text-align:center;padding:10px 12px;border-top:2px solid var(--border);color:#805ad5">${totPct}%</td>
       <td style="padding:10px 12px;border-top:2px solid var(--border)">
         <div style="display:flex;align-items:center;gap:3px;min-width:120px">
