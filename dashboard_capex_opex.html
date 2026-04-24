@@ -30,7 +30,7 @@
   .container { max-width: 1280px; margin: 0 auto; padding: 28px 24px; }
 
   /* KPI cards */
-  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 28px; }
+  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
   .kpi {
     background: #fff; border-radius: 12px; padding: 20px 18px;
     box-shadow: 0 1px 4px rgba(0,0,0,.07);
@@ -117,11 +117,6 @@
       <div class="val">29</div>
       <div class="sub">33% do total · Bugs, Toil, Security</div>
     </div>
-    <div class="kpi outros">
-      <label>Não classificados</label>
-      <div class="val">0</div>
-      <div class="sub">0% · todas as issues classificadas</div>
-    </div>
     <div class="kpi cycle-capex">
       <label>Cycle Time médio CapEx</label>
       <div class="val">4.3<span style="font-size:1rem;font-weight:400"> d.u.</span></div>
@@ -142,7 +137,6 @@
       <div class="legend">
         <div class="pill"><span style="background:#3b6bda"></span> CapEx</div>
         <div class="pill"><span style="background:#e05252"></span> OpEx</div>
-        <div class="pill"><span style="background:#a0a8c0"></span> Outros</div>
       </div>
       <div class="chart-wrap"><canvas id="chartWeeklyBar" height="220"></canvas></div>
     </div>
@@ -210,6 +204,13 @@
     </div>
   </div>
 
+  <!-- Row 2b: evolução anual CapEx % -->
+  <div class="card" style="margin-bottom:20px">
+    <h2>Evolução anual — % CapEx por semana</h2>
+    <div class="subtitle">Teto de saúde Q2: mín. 65% CapEx · Linha tracejada vermelha = limite · Virada Q3 em Jul/26</div>
+    <div class="chart-wrap"><canvas id="chartAnual" height="180"></canvas></div>
+  </div>
+
   <!-- Row 3: detail table -->
   <div class="card" style="margin-bottom:8px">
     <h2>Resumo semanal detalhado</h2>
@@ -237,7 +238,6 @@ const DATA = {
   weeks: ["30/03 - 05/04","06/04 - 12/04","13/04 - 19/04","20/04 - 26/04"],
   capex:  [13, 15,  9, 22],
   opex:   [13,  7,  3,  6],
-  outros: [ 0,  0,  0,  0],
   ct_capex: [1.77, 4.47, 5.00, 5.32],
   ct_opex:  [2.23, 4.29, 3.00, 5.50],
   products: {
@@ -265,9 +265,8 @@ new Chart(document.getElementById('chartWeeklyBar'), {
   data: {
     labels: DATA.weeks,
     datasets: [
-      { label:'CapEx',  data: DATA.capex,  backgroundColor: C.capex,  borderRadius: 4, stack:'s' },
-      { label:'OpEx',   data: DATA.opex,   backgroundColor: C.opex,   borderRadius: 4, stack:'s' },
-      { label:'Outros', data: DATA.outros, backgroundColor: C.outros, borderRadius: 4, stack:'s' },
+      { label:'CapEx', data: DATA.capex, backgroundColor: C.capex, borderRadius: 4, stack:'s' },
+      { label:'OpEx',  data: DATA.opex,  backgroundColor: C.opex,  borderRadius: 4, stack:'s' },
     ]
   },
   options: {
@@ -317,7 +316,7 @@ new Chart(document.getElementById('chartCycleLine'), {
 
 // ---- 3. 100% stacked bar - % semanal ----
 (function(){
-  const totals = DATA.weeks.map((_,i) => DATA.capex[i] + DATA.opex[i] + DATA.outros[i]);
+  const totals = DATA.weeks.map((_,i) => DATA.capex[i] + DATA.opex[i]);
   const pctCapex = totals.map((t,i) => parseFloat((DATA.capex[i]/t*100).toFixed(1)));
   const pctOpex  = totals.map((t,i) => parseFloat((DATA.opex[i]/t*100).toFixed(1)));
   new Chart(document.getElementById('chartPctWeek'), {
@@ -399,6 +398,158 @@ new Chart(document.getElementById('chartDonut'), {
     }
   }
 });
+
+// ---- 6. Linha anual CapEx % ----
+(function(){
+  const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const semanas = [], labels = [], pcts = [], pointRadius = [], pointBg = [];
+  const dados = {
+    '2026-03-30': 50.0,
+    '2026-04-06': 68.2,
+    '2026-04-13': 75.0,
+    '2026-04-20': 78.6,
+  };
+  const hoje = new Date(2026, 3, 24);
+  let d = new Date(2026, 0, 5); // primeira segunda-feira do ano
+  let semanaHoje = -1;
+  for (let i = 0; i < 52; i++) {
+    semanas.push(new Date(d));
+    const iso = d.toISOString().slice(0,10);
+    const val = dados[iso] ?? null;
+    pcts.push(val);
+    // label: nome do mês só na 1ª semana de cada mês
+    const prev = new Date(d); prev.setDate(prev.getDate() - 7);
+    labels.push(d.getMonth() !== prev.getMonth() ? meses[d.getMonth()] : '');
+    const isHoje = d <= hoje && hoje < new Date(d.getTime() + 7*86400000);
+    if(isHoje) semanaHoje = i;
+    pointRadius.push(val !== null ? (isHoje ? 8 : 4) : 0);
+    pointBg.push(isHoje ? '#fff' : C.capex);
+    d.setDate(d.getDate() + 7);
+  }
+
+  // Threshold 65% CapEx (teto de saúde Q2 = max 35% OpEx)
+  const TETO = 65;
+  // Q3 boundary: semana index 25 = Jun 29 (contém Jul 1)
+  const idxQ3 = 25;
+
+  const pluginFundo = {
+    id: 'q3fundo',
+    beforeDraw(chart) {
+      const { ctx, scales: { x, y } } = chart;
+      if (!x || !y) return;
+      ctx.save();
+
+      // Fundo Q2 (azul bem suave)
+      const xQ3 = x.getPixelForValue(idxQ3 - 0.5);
+      ctx.fillStyle = 'rgba(59,107,218,0.05)';
+      ctx.fillRect(x.left, y.top, xQ3 - x.left, y.bottom - y.top);
+
+      // Linha vertical Q2/Q3
+      ctx.strokeStyle = '#a0a8c0';
+      ctx.lineWidth = 1.5;
+      ctx.setLineDash([5, 4]);
+      ctx.beginPath();
+      ctx.moveTo(xQ3, y.top);
+      ctx.lineTo(xQ3, y.bottom);
+      ctx.stroke();
+      ctx.setLineDash([]);
+
+      // Labels Q2 / Q3
+      ctx.font = '500 11px Segoe UI, Arial, sans-serif';
+      ctx.fillStyle = '#7a849e';
+      ctx.textAlign = 'center';
+      ctx.fillText('Q2 — manutenção de saúde', x.left + (xQ3 - x.left) / 2, y.top + 14);
+      ctx.fillText('Q3/Q4 — meta redução OpEx', xQ3 + (x.right - xQ3) / 2, y.top + 14);
+
+      // Label do teto
+      const yTeto = y.getPixelForValue(TETO);
+      ctx.textAlign = 'right';
+      ctx.fillStyle = '#e05252';
+      ctx.font = '11px Segoe UI, Arial, sans-serif';
+      ctx.fillText('teto Q2 (65% CapEx)', x.right - 4, yTeto - 5);
+
+      ctx.restore();
+    }
+  };
+
+  new Chart(document.getElementById('chartAnual'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: '% CapEx',
+          data: pcts,
+          borderColor: C.capex,
+          backgroundColor: C.capexA,
+          pointBackgroundColor: pointBg,
+          pointBorderColor: C.capex,
+          pointBorderWidth: 2,
+          pointRadius,
+          pointHoverRadius: 7,
+          tension: 0.3,
+          fill: true,
+          spanGaps: false,
+          order: 2,
+        },
+        {
+          label: 'Hoje',
+          data: semanas.map((_,i) => i === semanaHoje ? pcts[semanaHoje] : null),
+          borderColor: 'transparent',
+          backgroundColor: 'transparent',
+          pointBackgroundColor: '#fff',
+          pointBorderColor: C.capex,
+          pointBorderWidth: 2.5,
+          pointRadius: 8,
+          pointStyle: 'circle',
+          showLine: false,
+          order: 1,
+        },
+        {
+          label: 'Teto Q2',
+          data: Array(52).fill(TETO),
+          borderColor: '#e05252',
+          borderWidth: 1.5,
+          borderDash: [6, 4],
+          pointRadius: 0,
+          backgroundColor: 'transparent',
+          fill: false,
+          order: 3,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          filter: item => item.datasetIndex === 0 && item.raw !== null,
+          callbacks: {
+            title: ctx => {
+              const i = ctx[0].dataIndex;
+              const s = semanas[i];
+              const e = new Date(s); e.setDate(e.getDate()+6);
+              return `${s.getDate().toString().padStart(2,'0')}/${(s.getMonth()+1).toString().padStart(2,'0')} – ${e.getDate().toString().padStart(2,'0')}/${(e.getMonth()+1).toString().padStart(2,'0')}`;
+            },
+            label: ctx => ` CapEx: ${ctx.raw.toFixed(0)}%`
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { autoSkip: false, maxRotation: 0, font: { size: 11 } }
+        },
+        y: {
+          min: 0, max: 100,
+          grid: { color: C.grid },
+          ticks: { stepSize: 25, callback: v => v + '%' }
+        }
+      }
+    },
+    plugins: [pluginFundo]
+  });
+})();
 
 // ---- Summary table ----
 const tableData = [
