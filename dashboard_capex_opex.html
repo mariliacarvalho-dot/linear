@@ -191,8 +191,17 @@
     </div>
   </div>
 
-  <!-- Row 2: product bar + donut -->
-  <div class="charts-row">
+  <!-- Row 2: tipo + product bar + donut -->
+  <div class="charts-row three">
+    <div class="card">
+      <h2>Por tipo de issue</h2>
+      <div class="subtitle">Quantidade de issues por tipo</div>
+      <div class="legend">
+        <div class="pill"><span style="background:#3b6bda"></span> CapEx</div>
+        <div class="pill"><span style="background:#e05252"></span> OpEx</div>
+      </div>
+      <div class="chart-wrap"><canvas id="chartTipo" height="260"></canvas></div>
+    </div>
     <div class="card">
       <h2>Por produto</h2>
       <div class="subtitle">Volume de issues por produto</div>
@@ -349,7 +358,37 @@ new Chart(document.getElementById('chartCycleLine'), {
   });
 })();
 
-// ---- 4. Horizontal bar - por produto ----
+// ---- 4. Horizontal bar - por tipo de issue ----
+new Chart(document.getElementById('chartTipo'), {
+  type: 'bar',
+  data: {
+    labels: ['Improvement','Bug','Feature','Spike','Toil','Security'],
+    datasets: [{
+      label: 'Issues',
+      data: [44, 26, 12, 3, 2, 1],
+      backgroundColor: [C.capex, C.opex, C.capex, C.capex, C.opex, C.opex],
+      borderRadius: 3,
+    }]
+  },
+  options: {
+    indexAxis: 'y',
+    responsive: true,
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        callbacks: {
+          label: ctx => ` ${ctx.raw} issues`
+        }
+      }
+    },
+    scales: {
+      x: { grid: { color: C.grid } },
+      y: { grid: { display: false }, ticks: { font: { size: 11 } } }
+    }
+  }
+});
+
+// ---- 5. Horizontal bar - por produto ----
 new Chart(document.getElementById('chartProduct'), {
   type: 'bar',
   data: {
