@@ -9,59 +9,57 @@
   (function() {
     const SENHA = 'lmsgcq2';
     const SESSION_KEY = 'dash_lmsgc_auth';
-    if (sessionStorage.getItem(SESSION_KEY) !== '1') {
-      document.addEventListener('DOMContentLoaded', function() {
-        document.body.style.display = 'none';
-        const overlay = document.createElement('div');
-        overlay.id = 'auth-overlay';
-        overlay.innerHTML = `
-          <div style="
-            position:fixed;inset:0;background:linear-gradient(135deg,#1e2433 0%,#2d3a5e 100%);
-            display:flex;align-items:center;justify-content:center;z-index:9999;
-          ">
-            <div style="
-              background:#fff;border-radius:16px;padding:40px 36px;width:100%;max-width:360px;
-              box-shadow:0 8px 32px rgba(0,0,0,.25);text-align:center;
-            ">
-              <div style="font-size:2rem;margin-bottom:8px">📊</div>
-              <h1 style="font-size:1.1rem;font-weight:700;color:#1e2433;margin-bottom:4px">Dashboard CapEx × OpEx</h1>
-              <p style="font-size:.8rem;color:#9aa1b8;margin-bottom:24px">Squad LMS GC · Acesso restrito</p>
-              <input id="senha-input" type="password" placeholder="Digite a senha" style="
-                width:100%;padding:10px 14px;border:1.5px solid #e0e3ee;border-radius:8px;
-                font-size:.95rem;outline:none;color:#1e2433;margin-bottom:12px;
-                font-family:'Segoe UI',Arial,sans-serif;
-              "/>
-              <p id="senha-erro" style="color:#e05252;font-size:.78rem;margin-bottom:10px;min-height:18px"></p>
-              <button id="senha-btn" style="
-                width:100%;padding:11px;background:linear-gradient(135deg,#1e2433,#2d3a5e);
-                color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:600;
-                cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;
-              ">Entrar</button>
-            </div>
-          </div>`;
-        document.body.appendChild(overlay);
+    if (sessionStorage.getItem(SESSION_KEY) === '1') return;
 
-        function tentarEntrar() {
-          const val = document.getElementById('senha-input').value;
-          if (val === SENHA) {
-            sessionStorage.setItem(SESSION_KEY, '1');
-            overlay.remove();
-            document.body.style.display = '';
-          } else {
-            const erro = document.getElementById('senha-erro');
-            erro.textContent = 'Senha incorreta. Tente novamente.';
-            document.getElementById('senha-input').value = '';
-            document.getElementById('senha-input').focus();
-          }
+    // Injeta o overlay imediatamente, antes do DOM carregar
+    const style = document.createElement('style');
+    style.textContent = '#auth-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1e2433 0%,#2d3a5e 100%);display:flex;align-items:center;justify-content:center;z-index:9999;}';
+    document.head.appendChild(style);
+
+    document.addEventListener('DOMContentLoaded', function() {
+      const overlay = document.createElement('div');
+      overlay.id = 'auth-overlay';
+      overlay.innerHTML = `
+        <div style="
+          background:#fff;border-radius:16px;padding:40px 36px;width:100%;max-width:360px;
+          box-shadow:0 8px 32px rgba(0,0,0,.25);text-align:center;
+        ">
+          <div style="font-size:2rem;margin-bottom:8px">📊</div>
+          <h1 style="font-size:1.1rem;font-weight:700;color:#1e2433;margin-bottom:4px">Dashboard CapEx × OpEx</h1>
+          <p style="font-size:.8rem;color:#9aa1b8;margin-bottom:24px">Squad LMS GC · Acesso restrito</p>
+          <input id="senha-input" type="password" placeholder="Digite a senha" style="
+            width:100%;padding:10px 14px;border:1.5px solid #e0e3ee;border-radius:8px;
+            font-size:.95rem;outline:none;color:#1e2433;margin-bottom:12px;
+            font-family:'Segoe UI',Arial,sans-serif;box-sizing:border-box;
+          "/>
+          <p id="senha-erro" style="color:#e05252;font-size:.78rem;margin-bottom:10px;min-height:18px"></p>
+          <button id="senha-btn" style="
+            width:100%;padding:11px;background:linear-gradient(135deg,#1e2433,#2d3a5e);
+            color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:600;
+            cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;
+          ">Entrar</button>
+        </div>`;
+      document.body.appendChild(overlay);
+      document.getElementById('senha-input').focus();
+
+      function tentarEntrar() {
+        const val = document.getElementById('senha-input').value;
+        if (val === SENHA) {
+          sessionStorage.setItem(SESSION_KEY, '1');
+          overlay.remove();
+        } else {
+          document.getElementById('senha-erro').textContent = 'Senha incorreta. Tente novamente.';
+          document.getElementById('senha-input').value = '';
+          document.getElementById('senha-input').focus();
         }
+      }
 
-        document.getElementById('senha-btn').addEventListener('click', tentarEntrar);
-        document.getElementById('senha-input').addEventListener('keydown', function(e) {
-          if (e.key === 'Enter') tentarEntrar();
-          document.getElementById('senha-erro').textContent = '';
-        });
+      document.getElementById('senha-btn').addEventListener('click', tentarEntrar);
+      document.getElementById('senha-input').addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') tentarEntrar();
+        document.getElementById('senha-erro').textContent = '';
       });
-    }
+    });
   })();
 </script>
 <style>
