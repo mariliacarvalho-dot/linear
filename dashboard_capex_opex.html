@@ -3,8 +3,67 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard CapEx x OpEx – LMS GC</title>
+<title>Dashboard CapEx × OpEx – LMS GC</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script>
+  (function() {
+    const SENHA = 'lmsgcq2';
+    const SESSION_KEY = 'dash_lmsgc_auth';
+    if (sessionStorage.getItem(SESSION_KEY) !== '1') {
+      document.addEventListener('DOMContentLoaded', function() {
+        document.body.style.display = 'none';
+        const overlay = document.createElement('div');
+        overlay.id = 'auth-overlay';
+        overlay.innerHTML = `
+          <div style="
+            position:fixed;inset:0;background:linear-gradient(135deg,#1e2433 0%,#2d3a5e 100%);
+            display:flex;align-items:center;justify-content:center;z-index:9999;
+          ">
+            <div style="
+              background:#fff;border-radius:16px;padding:40px 36px;width:100%;max-width:360px;
+              box-shadow:0 8px 32px rgba(0,0,0,.25);text-align:center;
+            ">
+              <div style="font-size:2rem;margin-bottom:8px">📊</div>
+              <h1 style="font-size:1.1rem;font-weight:700;color:#1e2433;margin-bottom:4px">Dashboard CapEx × OpEx</h1>
+              <p style="font-size:.8rem;color:#9aa1b8;margin-bottom:24px">Squad LMS GC · Acesso restrito</p>
+              <input id="senha-input" type="password" placeholder="Digite a senha" style="
+                width:100%;padding:10px 14px;border:1.5px solid #e0e3ee;border-radius:8px;
+                font-size:.95rem;outline:none;color:#1e2433;margin-bottom:12px;
+                font-family:'Segoe UI',Arial,sans-serif;
+              "/>
+              <p id="senha-erro" style="color:#e05252;font-size:.78rem;margin-bottom:10px;min-height:18px"></p>
+              <button id="senha-btn" style="
+                width:100%;padding:11px;background:linear-gradient(135deg,#1e2433,#2d3a5e);
+                color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:600;
+                cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;
+              ">Entrar</button>
+            </div>
+          </div>`;
+        document.body.appendChild(overlay);
+
+        function tentarEntrar() {
+          const val = document.getElementById('senha-input').value;
+          if (val === SENHA) {
+            sessionStorage.setItem(SESSION_KEY, '1');
+            overlay.remove();
+            document.body.style.display = '';
+          } else {
+            const erro = document.getElementById('senha-erro');
+            erro.textContent = 'Senha incorreta. Tente novamente.';
+            document.getElementById('senha-input').value = '';
+            document.getElementById('senha-input').focus();
+          }
+        }
+
+        document.getElementById('senha-btn').addEventListener('click', tentarEntrar);
+        document.getElementById('senha-input').addEventListener('keydown', function(e) {
+          if (e.key === 'Enter') tentarEntrar();
+          document.getElementById('senha-erro').textContent = '';
+        });
+      });
+    }
+  })();
+</script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f6; color: #1e2433; }
@@ -17,6 +76,7 @@
   }
   header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: .02em; }
   header p  { font-size: .85rem; opacity: .75; margin-top: 4px; }
+  .header-right { display: flex; gap: 12px; align-items: center; }
   .badge {
     background: rgba(255,255,255,.12);
     border: 1px solid rgba(255,255,255,.2);
@@ -26,26 +86,76 @@
     text-align: center;
   }
   .badge strong { display: block; font-size: 1.1rem; }
+  .badge-meta { font-size: .72rem; opacity: .75; }
+
+  .status-pill {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: .8rem;
+    font-weight: 700;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .status-pill.ok    { background: rgba(52, 199, 89, .2); border: 1px solid rgba(52,199,89,.4); color: #34c759; }
+  .status-pill.warn  { background: rgba(255,159,10, .2); border: 1px solid rgba(255,159,10,.4); color: #ff9f0a; }
+  .status-pill.danger{ background: rgba(224,82,82, .2); border: 1px solid rgba(224,82,82,.4); color: #ff453a; }
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; }
+  .status-pill.ok    .status-dot { background: #34c759; }
+  .status-pill.warn  .status-dot { background: #ff9f0a; }
+  .status-pill.danger .status-dot{ background: #ff453a; }
 
   .container { max-width: 1280px; margin: 0 auto; padding: 28px 24px; }
 
+  /* Meta banner */
+  .meta-banner {
+    background: linear-gradient(90deg, #1e2433, #2d3a5e);
+    border-radius: 12px;
+    padding: 16px 24px;
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 32px;
+    color: #fff;
+    flex-wrap: wrap;
+  }
+  .meta-banner .meta-item { text-align: center; }
+  .meta-banner .meta-label { font-size: .7rem; opacity: .65; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 2px; }
+  .meta-banner .meta-val { font-size: 1.3rem; font-weight: 700; }
+  .meta-banner .meta-sub { font-size: .72rem; opacity: .65; margin-top: 2px; }
+  .meta-divider { width: 1px; background: rgba(255,255,255,.15); align-self: stretch; }
+  .meta-banner .meta-goal {
+    flex: 1;
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(255,255,255,.15);
+    border-radius: 8px;
+    padding: 10px 16px;
+  }
+  .meta-banner .meta-goal h3 { font-size: .8rem; font-weight: 600; margin-bottom: 4px; }
+  .meta-banner .meta-goal p { font-size: .73rem; opacity: .7; line-height: 1.5; }
+
+  /* Progress bar */
+  .progress-wrap { margin-top: 8px; }
+  .progress-label { display: flex; justify-content: space-between; font-size: .7rem; opacity: .7; margin-bottom: 4px; }
+  .progress-bar-bg { background: rgba(255,255,255,.12); border-radius: 10px; height: 8px; overflow: hidden; }
+  .progress-bar-fill { height: 100%; border-radius: 10px; background: #34c759; transition: width .5s; }
+
   /* KPI cards */
-  .kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 28px; }
+  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 28px; }
   .kpi {
     background: #fff; border-radius: 12px; padding: 20px 18px;
     box-shadow: 0 1px 4px rgba(0,0,0,.07);
     border-left: 4px solid #ccc;
   }
-  .kpi.capex  { border-color: #3b6bda; }
-  .kpi.opex   { border-color: #e05252; }
-  .kpi.outros { border-color: #a0a8c0; }
-  .kpi.cycle-capex { border-color: #3b6bda; }
-  .kpi.cycle-opex  { border-color: #e05252; }
+  .kpi.capex        { border-color: #3b6bda; }
+  .kpi.opex         { border-color: #e05252; }
+  .kpi.total        { border-color: #6c5ce7; }
+  .kpi.cycle-capex  { border-color: #3b6bda; }
+  .kpi.cycle-opex   { border-color: #e05252; }
   .kpi label { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: #7a849e; display: block; margin-bottom: 6px; }
   .kpi .val  { font-size: 2rem; font-weight: 700; line-height: 1; }
   .kpi .sub  { font-size: .78rem; color: #7a849e; margin-top: 4px; }
-  .kpi.capex .val     { color: #3b6bda; }
-  .kpi.opex  .val     { color: #e05252; }
+  .kpi.capex .val       { color: #3b6bda; }
+  .kpi.opex  .val       { color: #e05252; }
+  .kpi.total .val       { color: #6c5ce7; }
   .kpi.cycle-capex .val { color: #3b6bda; }
   .kpi.cycle-opex  .val { color: #e05252; }
 
@@ -60,12 +170,28 @@
   .card .subtitle { font-size: .75rem; color: #9aa1b8; margin-bottom: 18px; }
   .chart-wrap { position: relative; }
 
+  /* Status mini cards inside weekly % */
+  .week-mini-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px; margin-bottom: 14px; }
+  .week-mini {
+    background: #f5f6fa; border-radius: 8px; padding: 8px 10px; text-align: center;
+    border-top: 3px solid #eef0f7;
+    transition: border-color .2s;
+  }
+  .week-mini.above,
+  .week-mini.at,
+  .week-mini.below { border-top-color: #a0a8c0; }
+  .week-mini .wm-date { font-size: 9px; color: #9aa1b8; margin-bottom: 3px; }
+  .week-mini .wm-pct  { font-size: 17px; font-weight: 700; }
+  .week-mini .wm-pct { color: #3b6bda; }
+  .week-mini .wm-opex { font-size: 9px; font-weight: 600; color: #e05252; }
+  .week-mini .wm-badge { font-size: 8px; border-radius: 4px; padding: 1px 5px; display: inline-block; margin-top: 2px; }
+  .week-mini.above .wm-badge { background: #dcfce7; color: #166534; }
+  .week-mini.at    .wm-badge { background: #fef3c7; color: #92400e; }
+  .week-mini.below .wm-badge { background: #fee2e2; color: #991b1b; }
+
   /* Legend pills */
   .legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
-  .pill {
-    display: flex; align-items: center; gap: 6px;
-    font-size: .75rem; color: #4a5168;
-  }
+  .pill { display: flex; align-items: center; gap: 6px; font-size: .75rem; color: #4a5168; }
   .pill span { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
 
   /* Table */
@@ -83,9 +209,13 @@
   .tag.opex   { background: #fde8e8; color: #b93535; }
   .tag.outros { background: #e8eaf0; color: #5a6280; }
 
-  /* Bar inside table */
   .bar-bg { background: #eef0f7; border-radius: 4px; height: 8px; overflow: hidden; min-width: 80px; }
   .bar-fill { height: 100%; border-radius: 4px; }
+
+  .pct-status { display: inline-block; border-radius: 4px; padding: 2px 6px; font-size: .68rem; font-weight: 600; }
+  .pct-status.ok     { background: #dcfce7; color: #166534; }
+  .pct-status.warn   { background: #fef3c7; color: #92400e; }
+  .pct-status.danger { background: #fee2e2; color: #991b1b; }
 
   footer { text-align: center; padding: 24px; font-size: .75rem; color: #9aa1b8; }
 </style>
@@ -95,41 +225,82 @@
 <header>
   <div>
     <h1>📊 Dashboard CapEx × OpEx</h1>
-    <p>Squad LMS GC · Período: 30/03 – 23/04/2026</p>
+    <p>Squad LMS GC · Período: 30/03 – 03/05/2026</p>
   </div>
-  <div class="badge">
-    <strong>88</strong>
-    issues entregues
+  <div class="header-right">
+    <div class="status-pill ok">
+      <div class="status-dot"></div>
+      67,3% CapEx acumulado Q2
+    </div>
+    <div class="badge">
+      <strong>104</strong>
+      issues entregues
+    </div>
   </div>
 </header>
 
 <div class="container">
 
+  <!-- Meta Banner -->
+  <div class="meta-banner">
+    <div class="meta-item">
+      <div class="meta-label">Última semana</div>
+      <div class="meta-val" style="color:#34c759">70,6%</div>
+      <div class="meta-sub">CapEx · 27/04–03/05</div>
+    </div>
+    <div class="meta-divider"></div>
+    <div class="meta-item">
+      <div class="meta-label">Acumulado Q2</div>
+      <div class="meta-val" style="color:#34c759">67,3%</div>
+      <div class="meta-sub">CapEx · 70 issues</div>
+    </div>
+    <div class="meta-divider"></div>
+    <div class="meta-item">
+      <div class="meta-label">OpEx acumulado</div>
+      <div class="meta-val" style="color:#e05252">32,7%</div>
+      <div class="meta-sub">OpEx · 34 issues</div>
+    </div>
+    <div class="meta-divider"></div>
+    <div class="meta-goal">
+      <h3>🎯 Estratégia de Redução de OpEx — Q2 2026</h3>
+      <p>As entregas do time ao longo do Q2 reduzirão o OpEx no Q3 e Q4, com objetivo de atingir <strong>40% de redução</strong> nos próximos ciclos. Acompanhe semanalmente a proporção CapEx × OpEx para garantir que o time mantém a saúde necessária para sustentar esse resultado.</p>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>CapEx acumulado Q2</span><span style="font-weight:600;color:#34c759">67,3%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:67.3%"></div></div>
+      </div>
+    </div>
+  </div>
+
   <!-- KPIs -->
   <div class="kpi-row">
+    <div class="kpi total">
+      <label>Total de Issues</label>
+      <div class="val">104</div>
+      <div class="sub">5 semanas entregues</div>
+    </div>
     <div class="kpi capex">
       <label>Total CapEx</label>
-      <div class="val">59</div>
-      <div class="sub">67% do total · Features, Improvements, Spikes</div>
+      <div class="val">70</div>
+      <div class="sub">67,3% do total · Feature, Improvement, Spike</div>
     </div>
     <div class="kpi opex">
       <label>Total OpEx</label>
-      <div class="val">29</div>
-      <div class="sub">33% do total · Bugs, Toil, Security</div>
+      <div class="val">34</div>
+      <div class="sub">32,7% do total · Bug, Toil, Security</div>
     </div>
     <div class="kpi cycle-capex">
       <label>Cycle Time médio CapEx</label>
-      <div class="val">4.3<span style="font-size:1rem;font-weight:400"> d.u.</span></div>
+      <div class="val">3,9<span style="font-size:1rem;font-weight:400"> d.u.</span></div>
       <div class="sub">dias úteis por issue</div>
     </div>
     <div class="kpi cycle-opex">
       <label>Cycle Time médio OpEx</label>
-      <div class="val">3.5<span style="font-size:1rem;font-weight:400"> d.u.</span></div>
+      <div class="val">3,8<span style="font-size:1rem;font-weight:400"> d.u.</span></div>
       <div class="sub">dias úteis por issue</div>
     </div>
   </div>
 
-  <!-- Row 1: stacked bar semanal + line cycle time -->
+  <!-- Row 1: stacked bar + cycle time line -->
   <div class="charts-row">
     <div class="card">
       <h2>Evolução semanal — Volume entregue</h2>
@@ -151,47 +322,22 @@
     </div>
   </div>
 
-  <!-- Row 1b: % semanal + anual lado a lado -->
+  <!-- Row 2: % semanal + anual -->
   <div class="charts-row" style="margin-bottom:20px">
     <div class="card">
       <h2>% semanal CapEx × OpEx</h2>
-      <div class="subtitle">Proporção de cada classificação por semana de entrega</div>
-      <div class="legend">
-        <div class="pill"><span style="background:#3b6bda"></span> CapEx</div>
-        <div class="pill"><span style="background:#e05252"></span> OpEx</div>
-      </div>
-      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:8px;margin-bottom:14px">
-        <div style="background:#f5f6fa;border-radius:8px;padding:8px 10px;text-align:center">
-          <div style="font-size:10px;color:#9aa1b8;margin-bottom:2px">30/03 – 05/04</div>
-          <div style="font-size:18px;font-weight:700;color:#3b6bda">50%</div>
-          <div style="font-size:10px;font-weight:600;color:#e05252">50% OpEx</div>
-        </div>
-        <div style="background:#f5f6fa;border-radius:8px;padding:8px 10px;text-align:center">
-          <div style="font-size:10px;color:#9aa1b8;margin-bottom:2px">06/04 – 12/04</div>
-          <div style="font-size:18px;font-weight:700;color:#3b6bda">68%</div>
-          <div style="font-size:10px;font-weight:600;color:#e05252">32% OpEx</div>
-        </div>
-        <div style="background:#f5f6fa;border-radius:8px;padding:8px 10px;text-align:center">
-          <div style="font-size:10px;color:#9aa1b8;margin-bottom:2px">13/04 – 19/04</div>
-          <div style="font-size:18px;font-weight:700;color:#3b6bda">75%</div>
-          <div style="font-size:10px;font-weight:600;color:#e05252">25% OpEx</div>
-        </div>
-        <div style="background:#f5f6fa;border-radius:8px;padding:8px 10px;text-align:center">
-          <div style="font-size:10px;color:#9aa1b8;margin-bottom:2px">20/04 – 26/04</div>
-          <div style="font-size:18px;font-weight:700;color:#3b6bda">79%</div>
-          <div style="font-size:10px;font-weight:600;color:#e05252">21% OpEx</div>
-        </div>
-      </div>
-      <div class="chart-wrap"><canvas id="chartPctWeek" height="200"></canvas></div>
+      <div class="subtitle">Proporção de issues por semana · cor indica saúde da semana</div>
+      <div class="week-mini-grid" id="weekMiniCards"></div>
+      <div class="chart-wrap"><canvas id="chartPctWeek" height="180"></canvas></div>
     </div>
     <div class="card">
-      <h2>Evolução anual — % CapEx por semana</h2>
-      <div class="subtitle">Teto de saúde Q2: mín. 65% CapEx · Linha tracejada vermelha = limite · Virada Q3 em Jul/26</div>
-      <div class="chart-wrap"><canvas id="chartAnual" height="200"></canvas></div>
+      <h2>Evolução acumulada Q2 — % CapEx por semana</h2>
+      <div class="subtitle">Teto de saúde Q2: mín. 65% CapEx · Linha tracejada vermelha = limite · Q3 começa em Jul/26</div>
+      <div class="chart-wrap"><canvas id="chartAnual" height="280"></canvas></div>
     </div>
   </div>
 
-  <!-- Row 2: tipo + product bar + donut -->
+  <!-- Row 3: tipo + produto + donut -->
   <div class="charts-row three">
     <div class="card">
       <h2>Por tipo de issue</h2>
@@ -220,17 +366,17 @@
     </div>
   </div>
 
-  <!-- Row 3: detail table -->
+  <!-- Detail table -->
   <div class="card" style="margin-bottom:8px">
     <h2>Resumo semanal detalhado</h2>
-    <div class="subtitle">Volume e cycle time por semana e classificação</div>
+    <div class="subtitle">Volume, proporção e cycle time por semana e classificação</div>
     <table>
       <thead>
         <tr>
           <th>Semana</th>
           <th>Classificação</th>
           <th>Issues entregues</th>
-          <th>Proporção da semana</th>
+          <th>% da semana</th>
           <th>Cycle Time médio (d.u.)</th>
         </tr>
       </thead>
@@ -240,20 +386,28 @@
 
 </div>
 
-<footer>Dashboard atualizado em 24/04/2026 · Dados: cycle_time_ate_2026-04-23.xlsx · Classificação: Feature/Improvement/Spike = CapEx | Bug/Toil = OpEx</footer>
+<footer>Dashboard atualizado em 04/05/2026 · Dados: Entregas time - Linear.xlsx · Classificação: Feature / Improvement / Spike = CapEx &nbsp;|&nbsp; Bug / Toil / Security = OpEx</footer>
 
 <script>
 const DATA = {
-  weeks: ["30/03 - 05/04","06/04 - 12/04","13/04 - 19/04","20/04 - 26/04"],
-  capex:  [13, 15,  9, 22],
-  opex:   [13,  7,  3,  6],
-  ct_capex: [1.77, 4.47, 5.00, 5.32],
-  ct_opex:  [2.23, 4.29, 3.00, 5.50],
+  weeks:     ["30/03–05/04","06/04–12/04","13/04–19/04","20/04–26/04","27/04–03/05"],
+  weekDates: ["30/03","06/04","13/04","20/04","27/04"],
+  capex:     [13, 13, 9, 23, 12],
+  opex:      [13,  7, 3,  6,  5],
+  ct_capex:  [1.77, 3.92, 5.00, 5.13, 3.08],
+  ct_opex:   [2.23, 4.29, 3.00, 5.50, 5.60],
   products: {
-    names: ["Customizador","Gestor - Conteúdos\nda estante","Árvore de coleções"],
-    capex: [38, 16, 5],
-    opex:  [16,  5, 7],
-  }
+    names:  ["Customizador", "Gestor – Estante", "Árvore de coleções", "GURL do COC", "Gestor – Geral"],
+    capex:  [49, 16, 5, 0, 0],
+    opex:   [18,  7, 7, 1, 1],
+  },
+  weekISO: [
+    '2026-03-30',
+    '2026-04-06',
+    '2026-04-13',
+    '2026-04-20',
+    '2026-04-27',
+  ]
 };
 
 const C = {
@@ -263,12 +417,37 @@ const C = {
   opexA:  'rgba(224,82,82,.18)',
   outros: '#a0a8c0',
   grid:   '#eef0f7',
+  green:  '#34c759',
+  orange: '#ff9f0a',
 };
+
+const TETO = 65;
 
 Chart.defaults.font.family = "'Segoe UI', Arial, sans-serif";
 Chart.defaults.font.size   = 12;
 
-// ---- 1. Stacked bar - volume semanal ----
+// ---- Week mini cards ----
+(function() {
+  const grid = document.getElementById('weekMiniCards');
+  DATA.weeks.forEach((w, i) => {
+    const total = DATA.capex[i] + DATA.opex[i];
+    const pctCapex = DATA.capex[i] / total * 100;
+    const pctOpex  = DATA.opex[i]  / total * 100;
+    let cls, badge;
+    if (pctCapex > TETO)        { cls = 'above'; }
+    else if (pctCapex === TETO) { cls = 'at';    }
+    else                        { cls = 'below'; }
+
+    grid.innerHTML += `
+      <div class="week-mini ${cls}">
+        <div class="wm-date">${w}</div>
+        <div class="wm-pct">${pctCapex.toFixed(0)}%</div>
+        <div class="wm-opex">${pctOpex.toFixed(0)}% OpEx</div>
+      </div>`;
+  });
+})();
+
+// ---- 1. Stacked bar – volume semanal ----
 new Chart(document.getElementById('chartWeeklyBar'), {
   type: 'bar',
   data: {
@@ -288,7 +467,7 @@ new Chart(document.getElementById('chartWeeklyBar'), {
   }
 });
 
-// ---- 2. Line - cycle time ----
+// ---- 2. Line – cycle time ----
 new Chart(document.getElementById('chartCycleLine'), {
   type: 'line',
   data: {
@@ -323,18 +502,30 @@ new Chart(document.getElementById('chartCycleLine'), {
   }
 });
 
-// ---- 3. 100% stacked bar - % semanal ----
+// ---- 3. 100% stacked bar – % semanal ----
 (function(){
-  const totals = DATA.weeks.map((_,i) => DATA.capex[i] + DATA.opex[i]);
+  const totals   = DATA.weeks.map((_,i) => DATA.capex[i] + DATA.opex[i]);
   const pctCapex = totals.map((t,i) => parseFloat((DATA.capex[i]/t*100).toFixed(1)));
   const pctOpex  = totals.map((t,i) => parseFloat((DATA.opex[i]/t*100).toFixed(1)));
+
+  // Color each bar by status
+  const barColors = pctCapex.map(p => p > TETO ? C.capex : p === TETO ? C.orange : C.opex);
+
   new Chart(document.getElementById('chartPctWeek'), {
     type: 'bar',
     data: {
       labels: DATA.weeks,
       datasets: [
-        { label:'CapEx', data: pctCapex, backgroundColor: C.capex, borderRadius:{topLeft:4,topRight:4}, stack:'s' },
-        { label:'OpEx',  data: pctOpex,  backgroundColor: C.opex,  borderRadius:{bottomLeft:4,bottomRight:4}, stack:'s' },
+        {
+          label:'CapEx', data: pctCapex,
+          backgroundColor: C.capex,
+          borderRadius:{topLeft:4,topRight:4}, stack:'s'
+        },
+        {
+          label:'OpEx',  data: pctOpex,
+          backgroundColor: C.opex,
+          borderRadius:{bottomLeft:4,bottomRight:4}, stack:'s'
+        },
       ]
     },
     options: {
@@ -358,15 +549,15 @@ new Chart(document.getElementById('chartCycleLine'), {
   });
 })();
 
-// ---- 4. Horizontal bar - por tipo de issue ----
+// ---- 4. Horizontal bar – por tipo de issue ----
 new Chart(document.getElementById('chartTipo'), {
   type: 'bar',
   data: {
-    labels: ['Improvement','Bug','Feature','Spike','Toil','Security'],
+    labels: ['Improvement','Bug','Feature','Toil','Spike','Security'],
     datasets: [{
       label: 'Issues',
-      data: [44, 26, 12, 3, 2, 1],
-      backgroundColor: [C.capex, C.opex, C.capex, C.capex, C.opex, C.opex],
+      data: [55, 29, 12, 4, 3, 1],
+      backgroundColor: [C.capex, C.opex, C.capex, C.opex, C.capex, C.opex],
       borderRadius: 3,
     }]
   },
@@ -375,11 +566,7 @@ new Chart(document.getElementById('chartTipo'), {
     responsive: true,
     plugins: {
       legend: { display: false },
-      tooltip: {
-        callbacks: {
-          label: ctx => ` ${ctx.raw} issues`
-        }
-      }
+      tooltip: { callbacks: { label: ctx => ` ${ctx.raw} issues` } }
     },
     scales: {
       x: { grid: { color: C.grid } },
@@ -388,11 +575,11 @@ new Chart(document.getElementById('chartTipo'), {
   }
 });
 
-// ---- 5. Horizontal bar - por produto ----
+// ---- 5. Horizontal stacked bar – por produto ----
 new Chart(document.getElementById('chartProduct'), {
   type: 'bar',
   data: {
-    labels: ['Customizador','Gestor - Estante','Árvore de coleções'],
+    labels: DATA.products.names,
     datasets: [
       { label:'CapEx', data: DATA.products.capex, backgroundColor: C.capex, borderRadius:3, stack:'s' },
       { label:'OpEx',  data: DATA.products.opex,  backgroundColor: C.opex,  borderRadius:3, stack:'s' },
@@ -401,10 +588,7 @@ new Chart(document.getElementById('chartProduct'), {
   options: {
     indexAxis: 'y',
     responsive: true,
-    plugins: {
-      legend: { display:false },
-      tooltip: { mode:'index', intersect:false }
-    },
+    plugins: { legend: { display:false }, tooltip: { mode:'index', intersect:false } },
     scales: {
       x: { grid:{ color:C.grid }, stacked:true },
       y: { grid:{ display:false }, stacked:true }
@@ -412,13 +596,13 @@ new Chart(document.getElementById('chartProduct'), {
   }
 });
 
-// ---- 5. Donut ----
+// ---- 6. Donut – mix geral ----
 new Chart(document.getElementById('chartDonut'), {
   type: 'doughnut',
   data: {
-    labels: ['CapEx (67%)', 'OpEx (33%)'],
+    labels: ['CapEx (67,3%)', 'OpEx (32,7%)'],
     datasets: [{
-      data: [59, 29],
+      data: [70, 34],
       backgroundColor: [C.capex, C.opex],
       borderWidth: 2, borderColor: '#fff',
       hoverOffset: 8
@@ -429,47 +613,41 @@ new Chart(document.getElementById('chartDonut'), {
     cutout: '68%',
     plugins: {
       legend: { position:'bottom', labels:{ boxWidth:12, padding:10, font:{ size:11 } } },
-      tooltip: {
-        callbacks: {
-          label: ctx => ` ${ctx.label}: ${ctx.raw} issues`
-        }
-      }
+      tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} issues` } }
     }
   }
 });
 
-// ---- 6. Linha anual CapEx % ----
+// ---- 7. Linha anual – % CapEx por semana ----
 (function(){
   const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
   const semanas = [], labels = [], pcts = [], pointRadius = [], pointBg = [];
-  const dados = {
+
+  const dadosSemana = {
     '2026-03-30': 50.0,
-    '2026-04-06': 68.2,
+    '2026-04-06': 65.0,
     '2026-04-13': 75.0,
-    '2026-04-20': 78.6,
+    '2026-04-20': 79.3,
+    '2026-04-27': 70.6,
   };
-  const hoje = new Date(2026, 3, 24);
+
+  const hoje = new Date(2026, 3, 27); // semana atual
   let d = new Date(2026, 0, 5); // primeira segunda-feira do ano
-  let semanaHoje = -1;
+
   for (let i = 0; i < 52; i++) {
     semanas.push(new Date(d));
     const iso = d.toISOString().slice(0,10);
-    const val = dados[iso] ?? null;
+    const val = dadosSemana[iso] ?? null;
     pcts.push(val);
-    // label: nome do mês só na 1ª semana de cada mês
     const prev = new Date(d); prev.setDate(prev.getDate() - 7);
     labels.push(d.getMonth() !== prev.getMonth() ? meses[d.getMonth()] : '');
     const isHoje = d <= hoje && hoje < new Date(d.getTime() + 7*86400000);
-    if(isHoje) semanaHoje = i;
     pointRadius.push(val !== null ? (isHoje ? 8 : 4) : 0);
-    pointBg.push(isHoje ? '#fff' : C.capex);
+    pointBg.push(isHoje ? '#fff' : (val !== null && val < TETO ? C.opex : C.capex));
     d.setDate(d.getDate() + 7);
   }
 
-  // Threshold 65% CapEx (teto de saúde Q2 = max 35% OpEx)
-  const TETO = 65;
-  // Q3 boundary: semana index 25 = Jun 29 (contém Jul 1)
-  const idxQ3 = 25;
+  const idxQ3 = 25; // ~Jun 29
 
   const pluginFundo = {
     id: 'q3fundo',
@@ -478,12 +656,13 @@ new Chart(document.getElementById('chartDonut'), {
       if (!x || !y) return;
       ctx.save();
 
-      // Fundo Q2 (azul bem suave)
       const xQ3 = x.getPixelForValue(idxQ3 - 0.5);
-      ctx.fillStyle = 'rgba(59,107,218,0.05)';
+
+      // Q2 background
+      ctx.fillStyle = 'rgba(59,107,218,0.04)';
       ctx.fillRect(x.left, y.top, xQ3 - x.left, y.bottom - y.top);
 
-      // Linha vertical Q2/Q3
+      // Q2/Q3 divider
       ctx.strokeStyle = '#a0a8c0';
       ctx.lineWidth = 1.5;
       ctx.setLineDash([5, 4]);
@@ -493,19 +672,19 @@ new Chart(document.getElementById('chartDonut'), {
       ctx.stroke();
       ctx.setLineDash([]);
 
-      // Labels Q2 / Q3
+      // Labels
       ctx.font = '500 11px Segoe UI, Arial, sans-serif';
       ctx.fillStyle = '#7a849e';
       ctx.textAlign = 'center';
-      ctx.fillText('Q2 — manutenção de saúde', x.left + (xQ3 - x.left) / 2, y.top + 14);
-      ctx.fillText('Q3/Q4 — meta redução OpEx', xQ3 + (x.right - xQ3) / 2, y.top + 14);
+      ctx.fillText('Q2 — manutenção de saúde (≥65% CapEx)', x.left + (xQ3 - x.left) / 2, y.top + 14);
+      ctx.fillText('Q3/Q4 — meta redução OpEx (40%)', xQ3 + (x.right - xQ3) / 2, y.top + 14);
 
-      // Label do teto
+      // Teto label
       const yTeto = y.getPixelForValue(TETO);
       ctx.textAlign = 'right';
-      ctx.fillStyle = '#e05252';
+      ctx.fillStyle = C.opex;
       ctx.font = '11px Segoe UI, Arial, sans-serif';
-      ctx.fillText('teto Q2 (65% CapEx)', x.right - 4, yTeto - 5);
+      ctx.fillText('teto mínimo Q2 (65% CapEx)', x.right - 4, yTeto - 5);
 
       ctx.restore();
     }
@@ -532,20 +711,7 @@ new Chart(document.getElementById('chartDonut'), {
           order: 2,
         },
         {
-          label: 'Hoje',
-          data: semanas.map((_,i) => i === semanaHoje ? pcts[semanaHoje] : null),
-          borderColor: 'transparent',
-          backgroundColor: 'transparent',
-          pointBackgroundColor: '#fff',
-          pointBorderColor: C.capex,
-          pointBorderWidth: 2.5,
-          pointRadius: 8,
-          pointStyle: 'circle',
-          showLine: false,
-          order: 1,
-        },
-        {
-          label: 'Teto Q2',
+          label: 'Teto Q2 (65%)',
           data: Array(52).fill(TETO),
           borderColor: '#e05252',
           borderWidth: 1.5,
@@ -570,7 +736,11 @@ new Chart(document.getElementById('chartDonut'), {
               const e = new Date(s); e.setDate(e.getDate()+6);
               return `${s.getDate().toString().padStart(2,'0')}/${(s.getMonth()+1).toString().padStart(2,'0')} – ${e.getDate().toString().padStart(2,'0')}/${(e.getMonth()+1).toString().padStart(2,'0')}`;
             },
-            label: ctx => ` CapEx: ${ctx.raw.toFixed(0)}%`
+            label: ctx => {
+              const val = ctx.raw;
+              const status = val >= TETO ? '✅ Dentro da meta' : '🔴 Abaixo da meta';
+              return [` CapEx: ${val.toFixed(1)}%`, ` ${status}`];
+            }
           }
         }
       },
@@ -591,38 +761,50 @@ new Chart(document.getElementById('chartDonut'), {
 })();
 
 // ---- Summary table ----
-const tableData = [
-  { week:'30/03 - 05/04', cls:'CapEx',  count:13, total:26, cycle:1.8 },
-  { week:'30/03 - 05/04', cls:'OpEx',   count:13, total:26, cycle:2.2 },
-  { week:'06/04 - 12/04', cls:'CapEx',  count:15, total:22, cycle:4.5 },
-  { week:'06/04 - 12/04', cls:'OpEx',   count: 7, total:22, cycle:4.3 },
-  { week:'13/04 - 19/04', cls:'CapEx',  count: 9, total:12, cycle:5.0 },
-  { week:'13/04 - 19/04', cls:'OpEx',   count: 3, total:12, cycle:3.0 },
-  { week:'20/04 - 26/04', cls:'CapEx',  count:22, total:28, cycle:5.3 },
-  { week:'20/04 - 26/04', cls:'OpEx',   count: 6, total:28, cycle:5.5 },
-];
+(function(){
+  const tableData = [
+    { week:'30/03 – 05/04', cls:'CapEx',  count:13, opexCount:13, cycle:1.77 },
+    { week:'30/03 – 05/04', cls:'OpEx',   count:13, opexCount:13, cycle:2.23 },
+    { week:'06/04 – 12/04', cls:'CapEx',  count:13, opexCount:7,  cycle:3.92 },
+    { week:'06/04 – 12/04', cls:'OpEx',   count: 7, opexCount:7,  cycle:4.29 },
+    { week:'13/04 – 19/04', cls:'CapEx',  count: 9, opexCount:3,  cycle:5.00 },
+    { week:'13/04 – 19/04', cls:'OpEx',   count: 3, opexCount:3,  cycle:3.00 },
+    { week:'20/04 – 26/04', cls:'CapEx',  count:23, opexCount:6,  cycle:5.13 },
+    { week:'20/04 – 26/04', cls:'OpEx',   count: 6, opexCount:6,  cycle:5.50 },
+    { week:'27/04 – 03/05', cls:'CapEx',  count:12, opexCount:5,  cycle:3.08 },
+    { week:'27/04 – 03/05', cls:'OpEx',   count: 5, opexCount:5,  cycle:5.60 },
+  ];
 
-const tbody = document.getElementById('summaryTable');
-tableData.forEach(r => {
-  const pct = Math.round(r.count / r.total * 100);
-  const clsKey = r.cls.toLowerCase();
-  const barColor = clsKey === 'capex' ? C.capex : clsKey === 'opex' ? C.opex : C.outros;
-  tbody.innerHTML += `
-    <tr>
-      <td><strong>${r.week}</strong></td>
-      <td><span class="tag ${clsKey}">${r.cls}</span></td>
-      <td><strong>${r.count}</strong> issues</td>
-      <td>
-        <div style="display:flex;align-items:center;gap:8px">
-          <div class="bar-bg" style="flex:1">
-            <div class="bar-fill" style="width:${pct}%;background:${barColor}"></div>
+  const totalsPerWeek = {};
+  tableData.forEach(r => {
+    if(!totalsPerWeek[r.week]) totalsPerWeek[r.week] = 0;
+    totalsPerWeek[r.week] += r.count;
+  });
+
+  const tbody = document.getElementById('summaryTable');
+  tableData.forEach(r => {
+    const total   = totalsPerWeek[r.week];
+    const pct     = Math.round(r.count / total * 100);
+    const clsKey  = r.cls.toLowerCase();
+    const barColor = clsKey === 'capex' ? C.capex : C.opex;
+
+    tbody.innerHTML += `
+      <tr>
+        <td><strong>${r.week}</strong></td>
+        <td><span class="tag ${clsKey}">${r.cls}</span></td>
+        <td><strong>${r.count}</strong> de ${total}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="bar-bg" style="flex:1">
+              <div class="bar-fill" style="width:${pct}%;background:${barColor}"></div>
+            </div>
+            <span style="font-size:.75rem;color:#7a849e;min-width:28px">${pct}%</span>
           </div>
-          <span style="font-size:.75rem;color:#7a849e;min-width:28px">${pct}%</span>
-        </div>
-      </td>
-      <td>${r.cycle.toFixed(1)} d.u.</td>
-    </tr>`;
-});
+        </td>
+        <td>${r.cycle.toFixed(1)} d.u.</td>
+      </tr>`;
+  });
+})();
 </script>
 </body>
 </html>
