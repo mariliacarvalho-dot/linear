@@ -364,6 +364,18 @@
     </div>
   </div>
 
+  <!-- Row comparativo 2025 x 2026 -->
+  <div class="card" style="margin-bottom:20px">
+    <h2>Comparativo OpEx — 2025 × 2026</h2>
+    <div class="subtitle">% de OpEx por mês · Jan–Mar/26 via Jira · Abr/26 em diante via Linear · zona sombreada = período crítico (Jul–Dez)</div>
+    <div class="legend">
+      <div class="pill"><span style="width:24px;height:3px;border-radius:2px;background:#a0a8c0;border-top:2px dashed #a0a8c0"></span> OpEx 2025 (histórico)</div>
+      <div class="pill"><span style="background:#e05252"></span> OpEx 2026 (atual)</div>
+      <div class="pill"><span style="width:24px;height:0;border-top:2px dashed #f5a623;display:inline-block"></span> Meta Jul–Dez ≤ 25%</div>
+    </div>
+    <div class="chart-wrap"><canvas id="chartComparativo" height="130"></canvas></div>
+  </div>
+
   <!-- Detail table -->
   <div class="card" style="margin-bottom:8px">
     <h2>Resumo semanal detalhado</h2>
@@ -755,6 +767,124 @@ new Chart(document.getElementById('chartDonut'), {
       }
     },
     plugins: [pluginFundo]
+  });
+})();
+
+// ---- 8. Comparativo OpEx 2025 × 2026 ----
+(function(){
+  const meses = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+
+  // 2025: dados do Jira (% OpEx por mês)
+  const opex2025 = [21, 9, 54, 27, 61, 48, 38, 35, 71, 68, 69, 73];
+
+  // 2026: Jan-Mar do Jira (37%, 51%, 51%), Abr do Linear (32.6%), Mai-Dez sem dados ainda
+  const opex2026 = [37, 51, 51, 32.6, null, null, null, null, null, null, null, null];
+
+  const pluginComparativo = {
+    id: 'comparativoPlugin',
+    beforeDatasetsDraw(chart) {
+      const { ctx, scales: { x, y } } = chart;
+      if (!x || !y) return;
+      const x0 = x.getPixelForValue(7.5);
+      const x1 = x.getPixelForValue(11.5);
+      const yTop = y.top, yBot = y.bottom;
+      ctx.save();
+      ctx.fillStyle = 'rgba(59,107,218,0.06)';
+      ctx.fillRect(x0, yTop, x1 - x0, yBot - yTop);
+      ctx.strokeStyle = 'rgba(59,107,218,0.25)';
+      ctx.lineWidth = 1;
+      ctx.setLineDash([4, 3]);
+      ctx.beginPath(); ctx.moveTo(x0, yTop); ctx.lineTo(x0, yBot); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#3b6bda';
+      ctx.font = '500 10px Segoe UI, Arial, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.fillText('Período crítico (Set–Dez)', x0 + (x1 - x0) / 2, yTop + 13);
+      ctx.restore();
+    },
+    afterDatasetsDraw(chart) {
+      const { ctx, scales: { x, y } } = chart;
+      if (!x || !y) return;
+      const xMeta0 = x.getPixelForValue(2.5);
+      const xMeta1 = x.getPixelForValue(11.5);
+      const xZona0 = x.getPixelForValue(7.5);
+      const xZona1 = x.getPixelForValue(11.5);
+      const yMeta  = y.getPixelForValue(25);
+      ctx.save();
+      ctx.strokeStyle = '#f5a623';
+      ctx.lineWidth = 2;
+      ctx.setLineDash([8, 4]);
+      ctx.beginPath(); ctx.moveTo(xMeta0, yMeta); ctx.lineTo(xMeta1, yMeta); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font = 'bold 10px Segoe UI, Arial, sans-serif';
+      ctx.textAlign = 'left';
+      ctx.fillStyle = '#b8720a';
+      ctx.fillText('Meta 2026: 25%', xMeta0 + 6, yMeta - 5);
+      ctx.restore();
+    }
+  };
+
+  new Chart(document.getElementById('chartComparativo'), {
+    type: 'line',
+    data: {
+      labels: meses,
+      datasets: [
+        {
+          label: 'OpEx 2025',
+          data: opex2025,
+          borderColor: '#a0a8c0',
+          backgroundColor: 'rgba(160,168,192,0.12)',
+          pointBackgroundColor: '#a0a8c0',
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          tension: 0.35,
+          fill: true,
+          borderDash: [5, 3],
+          order: 2,
+        },
+        {
+          label: 'OpEx 2026',
+          data: opex2026,
+          borderColor: '#e05252',
+          backgroundColor: 'rgba(224,82,82,0.10)',
+          pointBackgroundColor: opex2026.map((v, i) => i < 3 ? '#e05252' : '#34c759'),
+          pointBorderColor: opex2026.map((v, i) => i < 3 ? '#e05252' : '#34c759'),
+          pointRadius: opex2026.map(v => v !== null ? 5 : 0),
+          pointHoverRadius: 7,
+          tension: 0.35,
+          fill: true,
+          spanGaps: false,
+          order: 1,
+        },
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          mode: 'index',
+          intersect: false,
+          callbacks: {
+            label: ctx => {
+              if (ctx.raw === null) return null;
+              const fonte = ctx.datasetIndex === 1 && ctx.dataIndex >= 3 ? ' (Linear)' : ctx.datasetIndex === 1 ? ' (Jira)' : '';
+              return ` ${ctx.dataset.label}${fonte}: ${ctx.raw.toFixed(1)}%`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display: false } },
+        y: {
+          grid: { color: C.grid },
+          min: 0, max: 100,
+          ticks: { stepSize: 25, callback: v => v + '%' },
+          title: { display: true, text: '% OpEx' }
+        }
+      }
+    },
+    plugins: [pluginComparativo]
   });
 })();
 
