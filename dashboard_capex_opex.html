@@ -223,15 +223,15 @@
 <header>
   <div>
     <h1>📊 Dashboard CapEx × OpEx</h1>
-    <p>Squad LMS GC · Período: 30/03 – 03/05/2026</p>
+    <p>Squad LMS GC · Período: 30/03 – 10/05/2026</p>
   </div>
   <div class="header-right">
     <div class="status-pill ok">
       <div class="status-dot"></div>
-      67,3% CapEx acumulado Q2
+      65,1% CapEx acumulado Q2
     </div>
     <div class="badge">
-      <strong>104</strong>
+      <strong>129</strong>
       issues entregues
     </div>
   </div>
@@ -243,20 +243,20 @@
   <div class="meta-banner">
     <div class="meta-item">
       <div class="meta-label">Última semana</div>
-      <div class="meta-val" style="color:#34c759">70,6%</div>
-      <div class="meta-sub">CapEx · 27/04–03/05</div>
+      <div class="meta-val" style="color:#ff9f0a">52,2%</div>
+      <div class="meta-sub">CapEx · 04/05–10/05</div>
     </div>
     <div class="meta-divider"></div>
     <div class="meta-item">
       <div class="meta-label">Acumulado Q2</div>
-      <div class="meta-val" style="color:#34c759">67,3%</div>
-      <div class="meta-sub">CapEx · 70 issues</div>
+      <div class="meta-val" style="color:#ff9f0a">65,1%</div>
+      <div class="meta-sub">CapEx · 84 issues</div>
     </div>
     <div class="meta-divider"></div>
     <div class="meta-item">
       <div class="meta-label">OpEx acumulado</div>
-      <div class="meta-val" style="color:#e05252">32,7%</div>
-      <div class="meta-sub">OpEx · 34 issues</div>
+      <div class="meta-val" style="color:#e05252">34,9%</div>
+      <div class="meta-sub">OpEx · 45 issues</div>
     </div>
     <div class="meta-divider"></div>
     <div class="meta-goal">
@@ -273,18 +273,18 @@
   <div class="kpi-row">
     <div class="kpi total">
       <label>Total de Issues</label>
-      <div class="val">104</div>
-      <div class="sub">5 semanas entregues</div>
+      <div class="val">129</div>
+      <div class="sub">6 semanas entregues</div>
     </div>
     <div class="kpi capex">
       <label>Total CapEx</label>
-      <div class="val">70</div>
-      <div class="sub">67,3% do total · Feature, Improvement, Spike</div>
+      <div class="val">84</div>
+      <div class="sub">65,1% do total · Feature, Improvement, Spike</div>
     </div>
     <div class="kpi opex">
       <label>Total OpEx</label>
-      <div class="val">34</div>
-      <div class="sub">32,7% do total · Bug, Toil, Security</div>
+      <div class="val">45</div>
+      <div class="sub">34,9% do total · Bug, Toil, Security</div>
     </div>
     <div class="kpi cycle-capex">
       <label>Cycle Time médio CapEx</label>
@@ -293,7 +293,7 @@
     </div>
     <div class="kpi cycle-opex">
       <label>Cycle Time médio OpEx</label>
-      <div class="val">3,8<span style="font-size:1rem;font-weight:400"> d.u.</span></div>
+      <div class="val">3,7<span style="font-size:1rem;font-weight:400"> d.u.</span></div>
       <div class="sub">dias úteis por issue</div>
     </div>
   </div>
@@ -396,20 +396,20 @@
 
 </div>
 
-<footer>Dashboard atualizado em 04/05/2026 · Dados: Entregas time - Linear.xlsx · Classificação: Feature / Improvement / Spike = CapEx &nbsp;|&nbsp; Bug / Toil / Security = OpEx</footer>
+<footer>Dashboard atualizado em 10/05/2026 · Dados: Entregas time - Linear.xlsx · Classificação: Feature / Improvement / Spike = CapEx &nbsp;|&nbsp; Bug / Toil / Security = OpEx</footer>
 
 <script>
 const DATA = {
-  weeks:     ["30/03–05/04","06/04–12/04","13/04–19/04","20/04–26/04","27/04–03/05"],
-  weekDates: ["30/03","06/04","13/04","20/04","27/04"],
-  capex:     [13, 13, 9, 23, 12],
-  opex:      [13,  7, 3,  6,  5],
-  ct_capex:  [1.77, 3.92, 5.00, 5.13, 3.08],
-  ct_opex:   [2.23, 4.29, 3.00, 5.50, 5.60],
+  weeks:     ["30/03–05/04","06/04–12/04","13/04–19/04","20/04–26/04","27/04–03/05","04/05–10/05"],
+  weekDates: ["30/03","06/04","13/04","20/04","27/04","04/05"],
+  capex:     [13, 15, 9, 23, 12, 12],
+  opex:      [13,  7, 3,  6,  5, 11],
+  ct_capex:  [1.77, 4.47, 5.00, 5.13, 3.08, 3.25],
+  ct_opex:   [2.23, 4.29, 3.00, 5.50, 5.60, 3.55],
   products: {
     names:  ["Customizador", "Gestor – Estante", "Árvore de coleções", "GURL do COC", "Gestor – Geral"],
-    capex:  [49, 16, 5, 0, 0],
-    opex:   [18,  7, 7, 1, 1],
+    capex:  [57, 17, 10, 0, 0],
+    opex:   [21,  8, 13, 2, 1],
   },
   weekISO: [
     '2026-03-30',
@@ -566,7 +566,7 @@ new Chart(document.getElementById('chartTipo'), {
     labels: ['Improvement','Bug','Feature','Toil','Spike','Security'],
     datasets: [{
       label: 'Issues',
-      data: [55, 29, 12, 4, 3, 1],
+      data: [67, 36, 14, 6, 3, 3],
       backgroundColor: [C.capex, C.opex, C.capex, C.opex, C.capex, C.opex],
       borderRadius: 3,
     }]
@@ -610,9 +610,9 @@ new Chart(document.getElementById('chartProduct'), {
 new Chart(document.getElementById('chartDonut'), {
   type: 'doughnut',
   data: {
-    labels: ['CapEx (67,3%)', 'OpEx (32,7%)'],
+    labels: ['CapEx (65,1%)', 'OpEx (34,9%)'],
     datasets: [{
-      data: [70, 34],
+      data: [84, 45],
       backgroundColor: [C.capex, C.opex],
       borderWidth: 2, borderColor: '#fff',
       hoverOffset: 8
@@ -639,9 +639,10 @@ new Chart(document.getElementById('chartDonut'), {
     '2026-04-13': 75.0,
     '2026-04-20': 79.3,
     '2026-04-27': 70.6,
+    '2026-05-04': 52.2,
   };
 
-  const hoje = new Date(2026, 3, 27); // semana atual
+  const hoje = new Date(2026, 4, 4); // semana atual
   let d = new Date(2026, 0, 5); // primeira segunda-feira do ano
 
   for (let i = 0; i < 52; i++) {
@@ -778,7 +779,7 @@ new Chart(document.getElementById('chartDonut'), {
   const opex2025 = [21, 9, 54, 27, 61, 48, 38, 35, 71, 68, 69, 73];
 
   // 2026: Jan-Mar do Jira (37%, 51%, 51%), Abr do Linear (32.6%), Mai-Dez sem dados ainda
-  const opex2026 = [37, 51, 51, 32.6, null, null, null, null, null, null, null, null];
+  const opex2026 = [37, 51, 51, 32.0, 47.8, null, null, null, null, null, null, null];
 
   const pluginComparativo = {
     id: 'comparativoPlugin',
@@ -901,6 +902,8 @@ new Chart(document.getElementById('chartDonut'), {
     { week:'20/04 – 26/04', cls:'OpEx',   count: 6, opexCount:6,  cycle:5.50 },
     { week:'27/04 – 03/05', cls:'CapEx',  count:12, opexCount:5,  cycle:3.08 },
     { week:'27/04 – 03/05', cls:'OpEx',   count: 5, opexCount:5,  cycle:5.60 },
+    { week:'04/05 – 10/05', cls:'CapEx',  count:12, opexCount:11, cycle:3.25 },
+    { week:'04/05 – 10/05', cls:'OpEx',   count:11, opexCount:11, cycle:3.55 },
   ];
 
   const totalsPerWeek = {};
