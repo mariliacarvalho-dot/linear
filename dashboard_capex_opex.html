@@ -271,13 +271,35 @@ footer { text-align: center; padding: 24px; font-size: .75rem; color: #9aa1b8; }
   <!-- Comparativo -->
   <div class="card" style="margin-bottom:20px">
     <h2>Comparativo OpEx — 2025 × 2026</h2>
-    <div class="subtitle">% de OpEx por mês · Jan–Mar/26 via Jira · Abr/26 em diante via Linear · zona sombreada = período crítico (Set–Dez)</div>
+    <div class="subtitle">% de OpEx por mês · linha sólida = real · linha tracejada fina = média móvel 3M · Jan–Mar/26 via Jira · Abr/26 em diante via Linear</div>
     <div class="legend">
-      <div class="pill"><span style="background:#a0a8c0"></span> OpEx 2025 (histórico)</div>
-      <div class="pill"><span style="background:#e05252"></span> OpEx 2026 (atual)</div>
-      <div class="pill"><span style="width:24px;height:0;border-top:2px dashed #f5a623;display:inline-block"></span> Meta Jul–Dez ≤ 25%</div>
+      <div class="pill"><span style="background:#a0a8c0"></span> OpEx 2025</div>
+      <div class="pill"><span style="background:#e05252"></span> OpEx 2026</div>
+      <div class="pill"><span style="background:#6c5ce7"></span> MM3 2026</div>
+      <div class="pill"><span style="background:#b0b6c8"></span> MM3 2025</div>
+      <div class="pill"><span style="width:24px;height:0;border-top:2px dashed #f5a623;display:inline-block"></span> Meta Jul–Dez ≤ 28,7%</div>
     </div>
-    <div class="chart-wrap"><canvas id="chartComparativo" height="130"></canvas></div>
+    <div class="chart-wrap"><canvas id="chartComparativo" height="150"></canvas></div>
+  </div>
+
+  <!-- Progresso Meta −40% -->
+  <div class="card" style="margin-bottom:20px">
+    <h2>Progresso da meta — redução de 40% no OpEx</h2>
+    <div class="subtitle">Comparativo mês a mês · meta = OpEx 2025 × 0,60 · base Linear a partir de Abr/26</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px" id="metaKpis"></div>
+    <table id="metaTable" style="width:100%;border-collapse:collapse;font-size:.82rem;">
+      <thead>
+        <tr>
+          <th style="background:#f5f6fa;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#7a849e;padding:9px 12px;text-align:left;border-bottom:1px solid #e8ebf3;">Mês</th>
+          <th style="background:#f5f6fa;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#7a849e;padding:9px 12px;text-align:center;border-bottom:1px solid #e8ebf3;">OpEx 2025</th>
+          <th style="background:#f5f6fa;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#7a849e;padding:9px 12px;text-align:center;border-bottom:1px solid #e8ebf3;">Meta 2026 (−40%)</th>
+          <th style="background:#f5f6fa;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#7a849e;padding:9px 12px;text-align:center;border-bottom:1px solid #e8ebf3;">OpEx 2026 real</th>
+          <th style="background:#f5f6fa;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#7a849e;padding:9px 12px;text-align:center;border-bottom:1px solid #e8ebf3;">Redução alcançada</th>
+          <th style="background:#f5f6fa;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#7a849e;padding:9px 12px;text-align:center;border-bottom:1px solid #e8ebf3;">Status</th>
+        </tr>
+      </thead>
+      <tbody id="metaTableBody"></tbody>
+    </table>
   </div>
 
   <!-- Tabela -->
@@ -552,11 +574,24 @@ new Chart(document.getElementById('chartDonut'), {
   });
 })();
 
-// 8. Comparativo OpEx 2025 × 2026
+// 8. Comparativo OpEx 2025 × 2026 + MM3 + Meta −40%
 (function() {
-  var meses   = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  var meses    = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   var opex2025 = [21, 9, 54, 27, 61, 48, 38, 35, 71, 68, 69, 73];
   var opex2026 = [37, 51, 51, 32.0, 31.4, 26.9, null, null, null, null, null, null];
+
+  function mm3(arr) {
+    return arr.map(function(v, i) {
+      if (v === null) return null;
+      var vals = [];
+      for (var j = Math.max(0, i - 2); j <= i; j++) {
+        if (arr[j] !== null) vals.push(arr[j]);
+      }
+      return vals.length > 0 ? parseFloat((vals.reduce(function(a,b){ return a+b; }, 0) / vals.length).toFixed(1)) : null;
+    });
+  }
+  var mm3_2025 = mm3(opex2025);
+  var mm3_2026 = mm3(opex2026);
 
   var pluginComp = {
     id: 'compPlugin',
@@ -579,7 +614,7 @@ new Chart(document.getElementById('chartDonut'), {
       var ctx = chart.ctx, x = chart.scales.x, y = chart.scales.y;
       if (!x || !y) return;
       var xMeta0 = x.getPixelForValue(2.5), xMeta1 = x.getPixelForValue(11.5);
-      var yMeta  = y.getPixelForValue(25);
+      var yMeta  = y.getPixelForValue(28.7);
       ctx.save();
       ctx.strokeStyle = '#f5a623'; ctx.lineWidth = 2;
       ctx.setLineDash([8,4]);
@@ -587,7 +622,7 @@ new Chart(document.getElementById('chartDonut'), {
       ctx.setLineDash([]);
       ctx.font = 'bold 10px Segoe UI, Arial, sans-serif'; ctx.textAlign = 'left';
       ctx.fillStyle = '#b8720a';
-      ctx.fillText('Meta 2026: 25%', xMeta0 + 6, yMeta - 5);
+      ctx.fillText('Meta 2026: ≤28,7%', xMeta0 + 6, yMeta - 5);
       ctx.restore();
     }
   };
@@ -600,18 +635,33 @@ new Chart(document.getElementById('chartDonut'), {
         {
           label: 'OpEx 2025',
           data: opex2025,
-          borderColor: '#a0a8c0', backgroundColor: 'rgba(160,168,192,0.12)',
-          pointBackgroundColor: '#a0a8c0', pointRadius: 4, pointHoverRadius: 6,
-          tension: 0.35, fill: true, borderDash: [5,3], order: 2
+          borderColor: '#a0a8c0', backgroundColor: 'rgba(160,168,192,0.08)',
+          pointBackgroundColor: '#a0a8c0', pointRadius: 3, pointHoverRadius: 5,
+          tension: 0.35, fill: true, borderDash: [5,3], order: 4
+        },
+        {
+          label: 'MM3 2025',
+          data: mm3_2025,
+          borderColor: '#b0b6c8', backgroundColor: 'transparent',
+          pointRadius: 0, pointHoverRadius: 4,
+          tension: 0.4, fill: false, borderDash: [3,2], borderWidth: 1.5, order: 3
         },
         {
           label: 'OpEx 2026',
           data: opex2026,
-          borderColor: '#e05252', backgroundColor: 'rgba(224,82,82,0.10)',
+          borderColor: '#e05252', backgroundColor: 'rgba(224,82,82,0.08)',
           pointBackgroundColor: opex2026.map(function(v,i){ return i < 3 ? '#e05252' : '#34c759'; }),
           pointBorderColor:     opex2026.map(function(v,i){ return i < 3 ? '#e05252' : '#34c759'; }),
-          pointRadius: opex2026.map(function(v){ return v !== null ? 5 : 0; }),
-          pointHoverRadius: 7, tension: 0.35, fill: true, spanGaps: false, order: 1
+          pointRadius: opex2026.map(function(v){ return v !== null ? 4 : 0; }),
+          pointHoverRadius: 6, tension: 0.35, fill: true, spanGaps: false, order: 2
+        },
+        {
+          label: 'MM3 2026',
+          data: mm3_2026,
+          borderColor: '#6c5ce7', backgroundColor: 'transparent',
+          pointBackgroundColor: '#6c5ce7',
+          pointRadius: mm3_2026.map(function(v){ return v !== null ? 4 : 0; }),
+          pointHoverRadius: 6, tension: 0.4, fill: false, borderWidth: 2.5, spanGaps: false, order: 1
         }
       ]
     },
@@ -624,8 +674,9 @@ new Chart(document.getElementById('chartDonut'), {
           callbacks: {
             label: function(ctx) {
               if (ctx.raw === null) return null;
-              var fonte = ctx.datasetIndex === 1 && ctx.dataIndex >= 3 ? ' (Linear)' : ctx.datasetIndex === 1 ? ' (Jira)' : '';
-              return ' ' + ctx.dataset.label + fonte + ': ' + ctx.raw.toFixed(1) + '%';
+              var labels = ['OpEx 2025','MM3 2025','OpEx 2026','MM3 2026'];
+              var fonte = (ctx.datasetIndex === 2) ? (ctx.dataIndex < 3 ? ' (Jira)' : ' (Linear)') : '';
+              return ' ' + labels[ctx.datasetIndex] + fonte + ': ' + ctx.raw.toFixed(1) + '%';
             }
           }
         }
@@ -636,6 +687,61 @@ new Chart(document.getElementById('chartDonut'), {
       }
     },
     plugins: [pluginComp]
+  });
+
+  // Card progresso meta −40%
+  var mesesNomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  // Só meses com dado 2026 real (a partir de Abr = Linear)
+  var mesesMeta = [
+    { idx:3, fonte:'Linear' },
+    { idx:4, fonte:'Linear' },
+    { idx:5, fonte:'Linear' }
+  ];
+
+  // KPI cards: média período disponível
+  var vals26 = mesesMeta.map(function(m){ return opex2026[m.idx]; });
+  var vals25m = mesesMeta.map(function(m){ return opex2025[m.idx]; });
+  var mediaReal = vals26.reduce(function(a,b){return a+b;},0) / vals26.length;
+  var mediaMeta = vals25m.reduce(function(a,b){return a+b;},0) / vals25m.length * 0.6;
+  var mediaRedAlc = (vals25m.reduce(function(a,b){return a+b;},0)/vals25m.length - mediaReal) / (vals25m.reduce(function(a,b){return a+b;},0)/vals25m.length) * 100;
+  var mm3_atual = mm3_2026[5]; // Jun MM3
+
+  var kpiData = [
+    { label:'Média OpEx 2026 (Abr–Jun)', val: mediaReal.toFixed(1)+'%', color:'#e05252' },
+    { label:'Meta período (−40% de 2025)', val: mediaMeta.toFixed(1)+'%', color:'#3b6bda' },
+    { label:'Redução média alcançada', val: mediaRedAlc.toFixed(1)+'%', color: mediaRedAlc >= 40 ? '#34c759' : '#ff9f0a' },
+    { label:'MM3 atual (Jun)', val: mm3_atual !== null ? mm3_atual.toFixed(1)+'%' : '–', color:'#6c5ce7' },
+    { label:'Meta MM3 (−40% MM3 Jun/25)', val: (mm3_2025[5]*0.6).toFixed(1)+'%', color:'#3b6bda' }
+  ];
+  var kpiDiv = document.getElementById('metaKpis');
+  kpiData.forEach(function(k) {
+    kpiDiv.innerHTML += '<div style="background:#f5f6fa;border-radius:10px;padding:14px 12px;border-left:3px solid '+k.color+'">'+
+      '<div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:#7a849e;margin-bottom:5px">'+k.label+'</div>'+
+      '<div style="font-size:1.5rem;font-weight:700;color:'+k.color+'">'+k.val+'</div>'+
+      '</div>';
+  });
+
+  // Tabela
+  var tbody = document.getElementById('metaTableBody');
+  mesesMeta.forEach(function(m) {
+    var v25  = opex2025[m.idx];
+    var v26  = opex2026[m.idx];
+    var meta = parseFloat((v25 * 0.6).toFixed(1));
+    var red  = parseFloat(((v25 - v26) / v25 * 100).toFixed(1));
+    var ok   = red >= 40;
+    var statusColor = ok ? '#34c759' : '#ff9f0a';
+    var statusBg    = ok ? '#e8f8ed' : '#fff4e0';
+    var statusTxt   = ok ? '✅ Meta atingida' : '⚠️ Abaixo da meta';
+    var redColor    = ok ? '#1a7a35' : '#b36200';
+    tbody.innerHTML +=
+      '<tr style="border-bottom:1px solid #f0f2f6">'+
+      '<td style="padding:9px 12px"><strong>'+mesesNomes[m.idx]+'/26</strong><span style="font-size:.7rem;color:#9aa1b8;margin-left:6px">('+m.fonte+')</span></td>'+
+      '<td style="padding:9px 12px;text-align:center;color:#7a849e">'+v25.toFixed(1)+'%</td>'+
+      '<td style="padding:9px 12px;text-align:center;color:#3b6bda;font-weight:600">≤ '+meta+'%</td>'+
+      '<td style="padding:9px 12px;text-align:center;font-weight:700;color:'+(v26 <= meta ? '#34c759' : '#e05252')+'">'+v26.toFixed(1)+'%</td>'+
+      '<td style="padding:9px 12px;text-align:center;font-weight:700;color:'+redColor+'">'+red.toFixed(1)+'%</td>'+
+      '<td style="padding:9px 12px;text-align:center"><span style="background:'+statusBg+';color:'+statusColor+';border-radius:12px;padding:3px 10px;font-size:.75rem;font-weight:600">'+statusTxt+'</span></td>'+
+      '</tr>';
   });
 })();
 
