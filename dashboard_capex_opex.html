@@ -275,8 +275,6 @@ footer { text-align: center; padding: 24px; font-size: .75rem; color: #9aa1b8; }
     <div class="legend">
       <div class="pill"><span style="background:#a0a8c0"></span> OpEx 2025</div>
       <div class="pill"><span style="background:#e05252"></span> OpEx 2026</div>
-      <div class="pill"><span style="background:#6c5ce7"></span> MM3 2026</div>
-      <div class="pill"><span style="background:#b0b6c8"></span> MM3 2025</div>
       <div class="pill"><span style="width:24px;height:0;border-top:2px dashed #f5a623;display:inline-block"></span> Meta Jul–Dez ≤ 28,7%</div>
     </div>
     <div class="chart-wrap"><canvas id="chartComparativo" height="150"></canvas></div>
@@ -635,33 +633,18 @@ new Chart(document.getElementById('chartDonut'), {
         {
           label: 'OpEx 2025',
           data: opex2025,
-          borderColor: '#a0a8c0', backgroundColor: 'rgba(160,168,192,0.08)',
-          pointBackgroundColor: '#a0a8c0', pointRadius: 3, pointHoverRadius: 5,
-          tension: 0.35, fill: true, borderDash: [5,3], order: 4
-        },
-        {
-          label: 'MM3 2025',
-          data: mm3_2025,
-          borderColor: '#b0b6c8', backgroundColor: 'transparent',
-          pointRadius: 0, pointHoverRadius: 4,
-          tension: 0.4, fill: false, borderDash: [3,2], borderWidth: 1.5, order: 3
+          borderColor: '#a0a8c0', backgroundColor: 'rgba(160,168,192,0.12)',
+          pointBackgroundColor: '#a0a8c0', pointRadius: 4, pointHoverRadius: 6,
+          tension: 0.35, fill: true, borderDash: [5,3], order: 2
         },
         {
           label: 'OpEx 2026',
           data: opex2026,
-          borderColor: '#e05252', backgroundColor: 'rgba(224,82,82,0.08)',
+          borderColor: '#e05252', backgroundColor: 'rgba(224,82,82,0.10)',
           pointBackgroundColor: opex2026.map(function(v,i){ return i < 3 ? '#e05252' : '#34c759'; }),
           pointBorderColor:     opex2026.map(function(v,i){ return i < 3 ? '#e05252' : '#34c759'; }),
-          pointRadius: opex2026.map(function(v){ return v !== null ? 4 : 0; }),
-          pointHoverRadius: 6, tension: 0.35, fill: true, spanGaps: false, order: 2
-        },
-        {
-          label: 'MM3 2026',
-          data: mm3_2026,
-          borderColor: '#6c5ce7', backgroundColor: 'transparent',
-          pointBackgroundColor: '#6c5ce7',
-          pointRadius: mm3_2026.map(function(v){ return v !== null ? 4 : 0; }),
-          pointHoverRadius: 6, tension: 0.4, fill: false, borderWidth: 2.5, spanGaps: false, order: 1
+          pointRadius: opex2026.map(function(v){ return v !== null ? 5 : 0; }),
+          pointHoverRadius: 7, tension: 0.35, fill: true, spanGaps: false, order: 1
         }
       ]
     },
@@ -674,8 +657,8 @@ new Chart(document.getElementById('chartDonut'), {
           callbacks: {
             label: function(ctx) {
               if (ctx.raw === null) return null;
-              var labels = ['OpEx 2025','MM3 2025','OpEx 2026','MM3 2026'];
-              var fonte = (ctx.datasetIndex === 2) ? (ctx.dataIndex < 3 ? ' (Jira)' : ' (Linear)') : '';
+              var labels = ['OpEx 2025','OpEx 2026'];
+              var fonte = (ctx.datasetIndex === 1) ? (ctx.dataIndex < 3 ? ' (Jira)' : ' (Linear)') : '';
               return ' ' + labels[ctx.datasetIndex] + fonte + ': ' + ctx.raw.toFixed(1) + '%';
             }
           }
