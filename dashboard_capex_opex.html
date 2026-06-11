@@ -271,7 +271,7 @@ footer { text-align: center; padding: 24px; font-size: .75rem; color: #9aa1b8; }
   <!-- Comparativo -->
   <div class="card" style="margin-bottom:20px">
     <h2>Comparativo OpEx — 2025 × 2026</h2>
-    <div class="subtitle">% de OpEx por mês · linha sólida = real · linha tracejada fina = média móvel 3M · Jan–Mar/26 via Jira · Abr/26 em diante via Linear</div>
+    <div class="subtitle">% de esforço dedicado ao OpEx por mês · medido por Cycle Time · Jan–Mar/26 via Jira · Abr/26 em diante via Linear (CT proporcional)</div>
     <div class="legend">
       <div class="pill"><span style="background:#a0a8c0"></span> OpEx 2025</div>
       <div class="pill"><span style="background:#e05252"></span> OpEx 2026</div>
@@ -283,7 +283,7 @@ footer { text-align: center; padding: 24px; font-size: .75rem; color: #9aa1b8; }
   <!-- Progresso Meta −40% -->
   <div class="card" style="margin-bottom:20px">
     <h2>Progresso da meta — redução de 40% no OpEx</h2>
-    <div class="subtitle">Comparativo mês a mês · meta = OpEx 2025 × 0,60 · base Linear a partir de Abr/26</div>
+    <div class="subtitle">Comparativo mês a mês por esforço (Cycle Time) · meta = OpEx 2025 × 0,60 · Jan–Mar/26 via Jira · Abr/26 em diante via Linear CT proporcional</div>
     <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px" id="metaKpis"></div>
     <table id="metaTable" style="width:100%;border-collapse:collapse;font-size:.82rem;">
       <thead>
@@ -577,7 +577,7 @@ new Chart(document.getElementById('chartDonut'), {
 (function() {
   var meses    = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   var opex2025 = [21, 9, 54, 27, 61, 48, 38, 35, 71, 68, 69, 73];
-  var opex2026 = [37, 51, 51, 32.0, 30.6, 14.3, null, null, null, null, null, null];
+  var opex2026 = [37, 51, 51, 30.8, 25.7, 22.0, null, null, null, null, null, null];
 
   function mm3(arr) {
     return arr.map(function(v, i) {
