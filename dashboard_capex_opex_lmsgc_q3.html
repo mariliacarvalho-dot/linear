@@ -1,0 +1,906 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard CapEx × OpEx – LMS GC</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/chartjs-plugin-annotation/3.0.1/chartjs-plugin-annotation.min.js"></script>
+<script>
+(function() {
+  const SENHA = 'lmsgcq3';
+  const KEY   = 'dash_lmsgc_auth';
+  if (sessionStorage.getItem(KEY) === '1') return;
+  const st = document.createElement('style');
+  st.textContent = '#auth-overlay{position:fixed;inset:0;background:linear-gradient(135deg,#1e2433 0%,#2d3a5e 100%);display:flex;align-items:center;justify-content:center;z-index:9999;}';
+  document.head.appendChild(st);
+  document.addEventListener('DOMContentLoaded', function() {
+    const ov = document.createElement('div');
+    ov.id = 'auth-overlay';
+    ov.innerHTML = `<div style="background:#fff;border-radius:16px;padding:40px 36px;width:100%;max-width:360px;box-shadow:0 8px 32px rgba(0,0,0,.25);text-align:center;">
+      <div style="font-size:2rem;margin-bottom:8px">📊</div>
+      <h1 style="font-size:1.1rem;font-weight:700;color:#1e2433;margin-bottom:4px">Dashboard CapEx × OpEx</h1>
+      <p style="font-size:.8rem;color:#9aa1b8;margin-bottom:24px">Squad LMS GC · Acesso restrito</p>
+      <input id="si" type="password" placeholder="Digite a senha" style="width:100%;padding:10px 14px;border:1.5px solid #e0e3ee;border-radius:8px;font-size:.95rem;outline:none;color:#1e2433;margin-bottom:12px;font-family:'Segoe UI',Arial,sans-serif;box-sizing:border-box;"/>
+      <p id="se" style="color:#e05252;font-size:.78rem;margin-bottom:10px;min-height:18px"></p>
+      <button id="sb" style="width:100%;padding:11px;background:linear-gradient(135deg,#1e2433,#2d3a5e);color:#fff;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;font-family:'Segoe UI',Arial,sans-serif;">Entrar</button>
+    </div>`;
+    document.body.appendChild(ov);
+    document.getElementById('si').focus();
+    function go() {
+      if (document.getElementById('si').value === SENHA) {
+        sessionStorage.setItem(KEY, '1'); ov.remove();
+      } else {
+        document.getElementById('se').textContent = 'Senha incorreta. Tente novamente.';
+        document.getElementById('si').value = '';
+        document.getElementById('si').focus();
+      }
+    }
+    document.getElementById('sb').addEventListener('click', go);
+    document.getElementById('si').addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') go();
+      document.getElementById('se').textContent = '';
+    });
+  });
+})();
+</script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f0f2f6; color: #1e2433; }
+
+header { background: linear-gradient(135deg, #1e2433 0%, #2d3a5e 100%); color: #fff; padding: 24px 32px 20px; display: flex; align-items: center; justify-content: space-between; }
+header h1 { font-size: 1.5rem; font-weight: 700; letter-spacing: .02em; }
+header p  { font-size: .85rem; opacity: .75; margin-top: 4px; }
+.header-right { display: flex; gap: 12px; align-items: center; }
+.badge { background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2); border-radius: 20px; padding: 6px 14px; font-size: .78rem; text-align: center; }
+.badge strong { display: block; font-size: 1.1rem; }
+.status-pill { padding: 8px 16px; border-radius: 20px; font-size: .8rem; font-weight: 700; display: flex; align-items: center; gap: 8px; }
+.status-pill.ok   { background: rgba(52,199,89,.2);  border: 1px solid rgba(52,199,89,.4);  color: #34c759; }
+.status-pill.warn { background: rgba(255,159,10,.2); border: 1px solid rgba(255,159,10,.4); color: #ff9f0a; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; }
+.status-pill.ok   .status-dot { background: #34c759; }
+.status-pill.warn .status-dot { background: #ff9f0a; }
+
+.container { max-width: 1280px; margin: 0 auto; padding: 28px 24px; }
+
+.meta-banner { background: linear-gradient(90deg, #1e2433, #2d3a5e); border-radius: 12px; padding: 16px 24px; margin-bottom: 24px; display: flex; align-items: center; gap: 32px; color: #fff; flex-wrap: wrap; }
+.meta-banner .meta-item { text-align: center; }
+.meta-banner .meta-label { font-size: .7rem; opacity: .65; text-transform: uppercase; letter-spacing: .07em; margin-bottom: 2px; }
+.meta-banner .meta-val { font-size: 1.3rem; font-weight: 700; }
+.meta-banner .meta-sub { font-size: .72rem; opacity: .65; margin-top: 2px; }
+.meta-divider { width: 1px; background: rgba(255,255,255,.15); align-self: stretch; }
+.meta-banner .meta-goal { flex: 1; background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.15); border-radius: 8px; padding: 10px 16px; }
+.meta-banner .meta-goal h3 { font-size: .8rem; font-weight: 600; margin-bottom: 4px; }
+.meta-banner .meta-goal p  { font-size: .73rem; opacity: .7; line-height: 1.5; }
+.progress-wrap { margin-top: 8px; }
+.progress-label { display: flex; justify-content: space-between; font-size: .7rem; opacity: .7; margin-bottom: 4px; }
+.progress-bar-bg   { background: rgba(255,255,255,.12); border-radius: 10px; height: 8px; overflow: hidden; }
+.progress-bar-fill { height: 100%; border-radius: 10px; background: #34c759; }
+
+.kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; margin-bottom: 28px; }
+.kpi { background: #fff; border-radius: 12px; padding: 20px 18px; box-shadow: 0 1px 4px rgba(0,0,0,.07); border-left: 4px solid #ccc; }
+.kpi.capex       { border-color: #3b6bda; }
+.kpi.opex        { border-color: #e05252; }
+.kpi.total       { border-color: #6c5ce7; }
+.kpi.cycle-capex { border-color: #3b6bda; }
+.kpi.cycle-opex  { border-color: #e05252; }
+.kpi label { font-size: .72rem; text-transform: uppercase; letter-spacing: .07em; color: #7a849e; display: block; margin-bottom: 6px; }
+.kpi .val  { font-size: 2rem; font-weight: 700; line-height: 1; }
+.kpi .sub  { font-size: .78rem; color: #7a849e; margin-top: 4px; }
+.kpi.capex .val       { color: #3b6bda; }
+.kpi.opex  .val       { color: #e05252; }
+.kpi.total .val       { color: #6c5ce7; }
+.kpi.cycle-capex .val { color: #3b6bda; }
+.kpi.cycle-opex  .val { color: #e05252; }
+
+.charts-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px; }
+.charts-row.three { grid-template-columns: 1.3fr 1fr 1fr; }
+.card { background: #fff; border-radius: 12px; padding: 22px 20px; box-shadow: 0 1px 4px rgba(0,0,0,.07); }
+.card h2 { font-size: .9rem; font-weight: 600; color: #3a4260; margin-bottom: 4px; }
+.card .subtitle { font-size: .75rem; color: #9aa1b8; margin-bottom: 18px; }
+.chart-wrap { position: relative; }
+
+.week-mini-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px; margin-bottom: 14px; }
+.week-mini { background: #f5f6fa; border-radius: 8px; padding: 8px 10px; text-align: center; border-top: 3px solid #a0a8c0; }
+.week-mini .wm-date { font-size: 9px; color: #9aa1b8; margin-bottom: 3px; }
+.week-mini .wm-pct  { font-size: 17px; font-weight: 700; color: #3b6bda; }
+.week-mini .wm-opex { font-size: 9px; font-weight: 600; color: #e05252; }
+
+.legend { display: flex; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+.pill { display: flex; align-items: center; gap: 6px; font-size: .75rem; color: #4a5168; }
+.pill span { width: 10px; height: 10px; border-radius: 3px; display: inline-block; }
+
+table { width: 100%; border-collapse: collapse; font-size: .82rem; }
+th { background: #f5f6fa; font-size: .72rem; text-transform: uppercase; letter-spacing: .06em; color: #7a849e; padding: 9px 12px; text-align: left; border-bottom: 1px solid #e8ebf3; }
+td { padding: 9px 12px; border-bottom: 1px solid #f0f2f6; vertical-align: middle; }
+tr:last-child td { border-bottom: none; }
+.tag { display: inline-block; border-radius: 4px; padding: 2px 8px; font-size: .7rem; font-weight: 600; }
+.tag.capex { background: #dce8ff; color: #2953b8; }
+.tag.opex  { background: #fde8e8; color: #b93535; }
+.bar-bg   { background: #eef0f7; border-radius: 4px; height: 8px; overflow: hidden; min-width: 80px; }
+.bar-fill { height: 100%; border-radius: 4px; }
+
+footer { text-align: center; padding: 24px; font-size: .75rem; color: #9aa1b8; }
+</style>
+</head>
+<body>
+
+<header>
+  <div>
+    <h1>📊 Dashboard CapEx × OpEx</h1>
+    <p>Squad LMS GC · Período: 30/03 – 07/07/2026</p>
+  </div>
+  <div class="header-right">
+    <div class="status-pill ok">
+      <div class="status-dot"></div>
+      80,5% CapEx acumulado Q2
+    </div>
+    <div class="badge">
+      <strong>304</strong>
+      issues entregues
+    </div>
+  </div>
+</header>
+
+<div class="container">
+
+  <!-- Meta Banner -->
+  <div class="meta-banner">
+    <div class="meta-item">
+      <div class="meta-label">Última semana</div>
+      <div class="meta-val" style="color:#34c759">92,2%</div>
+      <div class="meta-sub">CapEx · 08/06–11/06</div>
+    </div>
+    <div class="meta-divider"></div>
+    <div class="meta-item">
+      <div class="meta-label">Acumulado Q2</div>
+      <div class="meta-val" style="color:#34c759">80,5%</div>
+      <div class="meta-sub">CapEx · 222 issues</div>
+    </div>
+    <div class="meta-divider"></div>
+    <div class="meta-item">
+      <div class="meta-label">OpEx acumulado</div>
+      <div class="meta-val" style="color:#e05252">19,5%</div>
+      <div class="meta-sub">OpEx · 82 issues</div>
+    </div>
+    <div class="meta-divider"></div>
+    <div class="meta-goal">
+      <h3>🎯 Estratégia de Redução de OpEx — Q3 2026</h3>
+      <p>Meta do Q3: manter o OpEx em <strong>≤ 30%</strong> do esforço total. Acompanhe semanalmente a proporção CapEx × OpEx para garantir que o time mantém a saúde necessária para sustentar esse resultado.</p>
+      <div class="progress-wrap">
+        <div class="progress-label"><span>CapEx acumulado Q2</span><span style="font-weight:600;color:#34c759">80,5%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:80.5%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- KPIs -->
+  <div class="kpi-row">
+    <div class="kpi total">
+      <label>Total de Issues</label>
+      <div class="val">304</div>
+      <div class="sub">11 semanas entregues</div>
+    </div>
+    <div class="kpi capex">
+      <label>Total CapEx</label>
+      <div class="val">222</div>
+      <div class="sub">80,5% do total · Feature, Improvement, Spike</div>
+    </div>
+    <div class="kpi opex">
+      <label>Total OpEx</label>
+      <div class="val">82</div>
+      <div class="sub">19,5% do total · Bug, Toil, Security</div>
+    </div>
+    <div class="kpi cycle-capex">
+      <label>Cycle Time médio CapEx</label>
+      <div class="val">4,4<span style="font-size:1rem;font-weight:400"> d.u.</span></div>
+      <div class="sub">dias úteis por issue</div>
+    </div>
+    <div class="kpi cycle-opex">
+      <label>Cycle Time médio OpEx</label>
+      <div class="val">4,3<span style="font-size:1rem;font-weight:400"> d.u.</span></div>
+      <div class="sub">dias úteis por issue</div>
+    </div>
+  </div>
+
+  <!-- Row 1 -->
+  <div class="charts-row">
+    <div class="card">
+      <h2>Evolução semanal — Volume entregue</h2>
+      <div class="subtitle">Quantidade de issues concluídas por semana</div>
+      <div class="legend">
+        <div class="pill"><span style="background:#3b6bda"></span> CapEx</div>
+        <div class="pill"><span style="background:#e05252"></span> OpEx</div>
+      </div>
+      <div class="chart-wrap"><canvas id="chartWeeklyBar" height="220"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Evolução semanal — Cycle Time médio</h2>
+      <div class="subtitle">Média de dias úteis por classificação</div>
+      <div class="legend">
+        <div class="pill"><span style="background:#3b6bda"></span> CapEx</div>
+        <div class="pill"><span style="background:#e05252"></span> OpEx</div>
+      </div>
+      <div class="chart-wrap"><canvas id="chartCycleLine" height="220"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Row 2 -->
+  <div class="charts-row" style="margin-bottom:20px">
+    <div class="card">
+      <h2>% semanal CapEx × OpEx</h2>
+      <div class="subtitle">Proporção de issues por semana · cor indica saúde da semana</div>
+      <div class="week-mini-grid" id="weekMiniCards"></div>
+      <div class="chart-wrap"><canvas id="chartPctWeek" height="180"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Evolução acumulada Q2 — % CapEx por semana</h2>
+      <div class="subtitle">Teto de saúde Q2: mín. 65% CapEx · Linha tracejada vermelha = limite · Q3 começa em Jul/26</div>
+      <div class="chart-wrap"><canvas id="chartAnual" height="280"></canvas></div>
+    </div>
+  </div>
+
+  <!-- Row 3 -->
+  <div class="charts-row three">
+    <div class="card">
+      <h2>Por tipo de issue</h2>
+      <div class="subtitle">Quantidade de issues por tipo</div>
+      <div class="legend">
+        <div class="pill"><span style="background:#3b6bda"></span> CapEx</div>
+        <div class="pill"><span style="background:#e05252"></span> OpEx</div>
+      </div>
+      <div class="chart-wrap"><canvas id="chartTipo" height="260"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Por produto</h2>
+      <div class="subtitle">Volume de issues por produto</div>
+      <div class="legend">
+        <div class="pill"><span style="background:#3b6bda"></span> CapEx</div>
+        <div class="pill"><span style="background:#e05252"></span> OpEx</div>
+      </div>
+      <div class="chart-wrap"><canvas id="chartProduct" height="260"></canvas></div>
+    </div>
+    <div class="card">
+      <h2>Mix geral CapEx × OpEx</h2>
+      <div class="subtitle">Proporção do período completo</div>
+      <div class="chart-wrap" style="display:flex;align-items:center;justify-content:center;height:260px">
+        <canvas id="chartDonut" style="max-height:240px;max-width:240px"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- Comparativo -->
+  <div class="card" style="margin-bottom:20px">
+    <h2>Comparativo OpEx — 2025 × 2026</h2>
+    <div class="subtitle">% de esforço dedicado ao OpEx por mês · medido por Cycle Time · Jan–Mar/26 via Jira · Abr/26 em diante via Linear (CT proporcional)</div>
+    <div class="legend">
+      <div class="pill"><span style="background:#a0a8c0"></span> OpEx 2025</div>
+      <div class="pill"><span style="background:#e05252"></span> OpEx 2026</div>
+      <div class="pill"><span style="width:24px;height:0;border-top:2px dashed #f5a623;display:inline-block"></span> Meta Q3 ≤ 30%</div>
+    </div>
+    <div class="chart-wrap"><canvas id="chartComparativo" height="150"></canvas></div>
+  </div>
+
+  <!-- Redução mensal vs média 2025 -->
+  <div class="card" style="margin-bottom:20px">
+    <h2>Redução mensal de esforço OpEx vs média 2025</h2>
+    <div class="subtitle">% de redução alcançada a cada mês · base: média OpEx 2025 = 47,8% · dados Linear (Abr–Jun/26) · linha vermelha = meta de −37,2% (equivalente a OpEx ≤30%)</div>
+    <div class="legend" style="margin-bottom:14px">
+      <div class="pill"><span style="background:#34c759"></span> Meta atingida (≥ 37,2%)</div>
+      <div class="pill"><span style="background:#ff9f0a"></span> Abaixo da meta (&lt; 37,2%)</div>
+      <div class="pill"><span style="width:24px;height:0;border-top:2px dashed #e05252;display:inline-block"></span> Meta −37,2%</div>
+    </div>
+    <div class="chart-wrap" style="position:relative;height:260px"><canvas id="chartReducao" role="img" aria-label="Redução de esforço OpEx por mês em 2026 vs média 2025"></canvas></div>
+  </div>
+
+  <!-- Progresso Meta −40% -->
+  <div class="card" style="margin-bottom:20px">
+    <h2>Progresso da meta — OpEx ≤ 30%</h2>
+    <div class="subtitle">Comparativo mês a mês por esforço (Cycle Time) · meta = OpEx ≤ 30% · Jan–Mar/26 via Jira · Abr/26 em diante via Linear CT proporcional</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px" id="metaKpis"></div>
+    <table id="metaTable" style="width:100%;border-collapse:collapse;font-size:.82rem;">
+      <thead>
+        <tr>
+          <th style="background:#f5f6fa;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#7a849e;padding:9px 12px;text-align:left;border-bottom:1px solid #e8ebf3;">Mês</th>
+          <th style="background:#f5f6fa;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#7a849e;padding:9px 12px;text-align:center;border-bottom:1px solid #e8ebf3;">OpEx 2025</th>
+          <th style="background:#f5f6fa;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#7a849e;padding:9px 12px;text-align:center;border-bottom:1px solid #e8ebf3;">Meta Q3 (≤30%)</th>
+          <th style="background:#f5f6fa;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#7a849e;padding:9px 12px;text-align:center;border-bottom:1px solid #e8ebf3;">OpEx 2026 real</th>
+          <th style="background:#f5f6fa;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#7a849e;padding:9px 12px;text-align:center;border-bottom:1px solid #e8ebf3;">Redução alcançada</th>
+          <th style="background:#f5f6fa;font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:#7a849e;padding:9px 12px;text-align:center;border-bottom:1px solid #e8ebf3;">Status</th>
+        </tr>
+      </thead>
+      <tbody id="metaTableBody"></tbody>
+    </table>
+  </div>
+
+  <!-- Tabela -->
+  <div class="card" style="margin-bottom:8px">
+    <h2>Resumo semanal detalhado</h2>
+    <div class="subtitle">Volume, proporção e cycle time por semana e classificação</div>
+    <table>
+      <thead>
+        <tr>
+          <th>Semana</th><th>Classificação</th><th>Issues entregues</th><th>% da semana</th><th>Cycle Time médio (d.u.)</th>
+        </tr>
+      </thead>
+      <tbody id="summaryTable"></tbody>
+    </table>
+  </div>
+
+</div>
+
+<footer>Dashboard atualizado em 07/07/2026 · Dados: cycle_time.xlsx · Classificação: Feature / Improvement / Spike = CapEx | Bug / Toil / Security = OpEx · 11 issues pendentes de classificação não computadas</footer>
+
+<script>
+const DATA = {
+  weeks:    ["30/03–05/04","06/04–12/04","13/04–19/04","20/04–26/04","27/04–03/05","04/05–10/05","11/05–17/05","18/05–24/05","25/05–31/05","01/06–07/06","08/06–14/06","15/06–21/06","22/06–28/06","29/06–05/07","06/07–12/07"],
+  capex:    [13, 15,  9, 23, 12, 14, 12, 37, 21, 19, 59, 51, 24, 47, 17],
+  opex:     [13,  7,  3,  6,  5, 11,  6, 16,  4,  7,  6,  4,  0,  0,  1],
+  ct_capex: [1.77, 4.47, 5.00, 5.13, 3.08, 3.50, 11.08, 4.43, 1.67, 2.74, 4.75, 3.24, 2.00, 4.09, 7.71],
+  ct_opex:  [2.23, 4.29, 3.00, 5.50, 5.60, 3.55,  3.50, 4.12, 1.50, 3.29, 11.67, 2.75, 0, 0, 1.00],
+  products: {
+    names: ["Customizador","Gestor – Estante","Árvore de coleções","GURL do COC","Gestor – Geral","ShortURL do SAS"],
+    capex: [104, 156, 78, 0, 30, 0],
+    opex:  [ 44,  13, 25, 4,  3, 2]
+  }
+};
+
+const C = {
+  capex:  '#3b6bda', capexA: 'rgba(59,107,218,.18)',
+  opex:   '#e05252', opexA:  'rgba(224,82,82,.18)',
+  outros: '#a0a8c0', grid:   '#eef0f7',
+  green:  '#34c759', orange: '#ff9f0a'
+};
+const TETO = 65;
+Chart.defaults.font.family = "'Segoe UI', Arial, sans-serif";
+Chart.defaults.font.size   = 12;
+
+// Week mini cards
+(function() {
+  const grid = document.getElementById('weekMiniCards');
+  DATA.weeks.forEach(function(w, i) {
+    const total    = DATA.capex[i] + DATA.opex[i];
+    const pctCapex = DATA.capex[i] / total * 100;
+    const pctOpex  = DATA.opex[i]  / total * 100;
+    grid.innerHTML += '<div class="week-mini"><div class="wm-date">' + w + '</div>' +
+      '<div class="wm-pct">' + pctCapex.toFixed(0) + '%</div>' +
+      '<div class="wm-opex">' + pctOpex.toFixed(0) + '% OpEx</div></div>';
+  });
+})();
+
+// 1. Stacked bar semanal
+new Chart(document.getElementById('chartWeeklyBar'), {
+  type: 'bar',
+  data: {
+    labels: DATA.weeks,
+    datasets: [
+      { label:'CapEx', data: DATA.capex, backgroundColor: C.capex, borderRadius: 4, stack:'s' },
+      { label:'OpEx',  data: DATA.opex,  backgroundColor: C.opex,  borderRadius: 4, stack:'s' }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display: false }, tooltip: { mode:'index', intersect:false } },
+    scales: {
+      x: { grid: { display:false } },
+      y: { grid: { color: C.grid }, ticks: { stepSize:5 }, title: { display:true, text:'Issues' } }
+    }
+  }
+});
+
+// 2. Line cycle time
+new Chart(document.getElementById('chartCycleLine'), {
+  type: 'line',
+  data: {
+    labels: DATA.weeks,
+    datasets: [
+      { label:'CapEx', data: DATA.ct_capex, borderColor: C.capex, backgroundColor: C.capexA, pointBackgroundColor: C.capex, pointRadius:5, tension:.35, fill:true },
+      { label:'OpEx',  data: DATA.ct_opex,  borderColor: C.opex,  backgroundColor: C.opexA,  pointBackgroundColor: C.opex,  pointRadius:5, tension:.35, fill:true }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: { legend: { display:false }, tooltip: { mode:'index', intersect:false } },
+    scales: {
+      x: { grid: { display:false } },
+      y: { grid: { color: C.grid }, title: { display:true, text:'Dias úteis' }, min:0, suggestedMax:14, ticks: { stepSize:2 } }
+    }
+  }
+});
+
+// 3. 100% stacked % semanal
+(function() {
+  const totals   = DATA.weeks.map(function(_,i){ return DATA.capex[i] + DATA.opex[i]; });
+  const pctCapex = totals.map(function(t,i){ return parseFloat((DATA.capex[i]/t*100).toFixed(1)); });
+  const pctOpex  = totals.map(function(t,i){ return parseFloat((DATA.opex[i]/t*100).toFixed(1)); });
+  new Chart(document.getElementById('chartPctWeek'), {
+    type: 'bar',
+    data: {
+      labels: DATA.weeks,
+      datasets: [
+        { label:'CapEx', data: pctCapex, backgroundColor: C.capex, borderRadius:{topLeft:4,topRight:4}, stack:'s' },
+        { label:'OpEx',  data: pctOpex,  backgroundColor: C.opex,  borderRadius:{bottomLeft:4,bottomRight:4}, stack:'s' }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display:false },
+        tooltip: { mode:'index', intersect:false, callbacks: { label: function(ctx){ return ' ' + ctx.dataset.label + ': ' + ctx.raw.toFixed(0) + '%'; } } }
+      },
+      scales: {
+        x: { grid:{ display:false }, stacked:true },
+        y: { stacked:true, min:0, max:100, grid:{ color:C.grid }, ticks:{ stepSize:25, callback: function(v){ return v+'%'; } } }
+      }
+    }
+  });
+})();
+
+// 4. Tipo de issue
+new Chart(document.getElementById('chartTipo'), {
+  type: 'bar',
+  data: {
+    labels: ['Improvement','Bug','Feature','Security','Spike','Toil'],
+    datasets: [{
+      label: 'Issues',
+      data: [300, 66, 68, 8, 7, 17],
+      backgroundColor: [C.capex, C.opex, C.capex, C.opex, C.capex, C.opex],
+      borderRadius: 3
+    }]
+  },
+  options: {
+    indexAxis: 'y', responsive: true,
+    plugins: { legend: { display:false }, tooltip: { callbacks: { label: function(ctx){ return ' ' + ctx.raw + ' issues'; } } } },
+    scales: { x: { grid: { color: C.grid } }, y: { grid: { display:false }, ticks: { font: { size:11 } } } }
+  }
+});
+
+// 5. Por produto
+new Chart(document.getElementById('chartProduct'), {
+  type: 'bar',
+  data: {
+    labels: DATA.products.names,
+    datasets: [
+      { label:'CapEx', data: DATA.products.capex, backgroundColor: C.capex, borderRadius:3, stack:'s' },
+      { label:'OpEx',  data: DATA.products.opex,  backgroundColor: C.opex,  borderRadius:3, stack:'s' }
+    ]
+  },
+  options: {
+    indexAxis: 'y', responsive: true,
+    plugins: { legend: { display:false }, tooltip: { mode:'index', intersect:false } },
+    scales: { x: { grid:{ color:C.grid }, stacked:true }, y: { grid:{ display:false }, stacked:true } }
+  }
+});
+
+// 6. Donut
+new Chart(document.getElementById('chartDonut'), {
+  type: 'doughnut',
+  data: {
+    labels: ['CapEx (80,5%)', 'OpEx (19,5%)'],
+    datasets: [{ data: [375, 91], backgroundColor: [C.capex, C.opex], borderWidth:2, borderColor:'#fff', hoverOffset:8 }]
+  },
+  options: {
+    responsive: true, cutout:'68%',
+    plugins: {
+      legend: { position:'bottom', labels:{ boxWidth:12, padding:10, font:{ size:11 } } },
+      tooltip: { callbacks: { label: function(ctx){ return ' ' + ctx.label + ': ' + ctx.raw + ' issues'; } } }
+    }
+  }
+});
+
+// 7. Linha anual
+(function() {
+  const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const dadosSemana = {
+    '2026-03-30': 50.0,
+    '2026-04-06': 68.2,
+    '2026-04-13': 75.0,
+    '2026-04-20': 79.3,
+    '2026-04-27': 70.6,
+    '2026-05-04': 56.0,
+    '2026-05-11': 66.7,
+    '2026-05-18': 69.8,
+    '2026-05-25': 84.0,
+    '2026-06-01': 73.1,
+    '2026-06-08': 90.8,
+    '2026-06-15': 92.7,
+    '2026-06-22': 100.0,
+    '2026-06-29': 100.0,
+    '2026-07-06': 94.4
+  };
+  const hoje = new Date(2026, 6, 7);
+  var semanas = [], labels = [], pcts = [], pointRadius = [], pointBg = [];
+  var d = new Date(2026, 0, 5);
+  for (var i = 0; i < 52; i++) {
+    semanas.push(new Date(d));
+    var iso = d.toISOString().slice(0,10);
+    var val = dadosSemana[iso] !== undefined ? dadosSemana[iso] : null;
+    pcts.push(val);
+    var prev = new Date(d); prev.setDate(prev.getDate() - 7);
+    labels.push(d.getMonth() !== prev.getMonth() ? meses[d.getMonth()] : '');
+    var isHoje = d <= hoje && hoje < new Date(d.getTime() + 7*86400000);
+    pointRadius.push(val !== null ? (isHoje ? 8 : 4) : 0);
+    pointBg.push(isHoje ? '#fff' : (val !== null && val < TETO ? C.opex : C.capex));
+    d.setDate(d.getDate() + 7);
+  }
+  var idxQ3 = 25;
+  var pluginFundo = {
+    id: 'q3fundo',
+    beforeDraw: function(chart) {
+      var ctx = chart.ctx, x = chart.scales.x, y = chart.scales.y;
+      if (!x || !y) return;
+      var xQ3 = x.getPixelForValue(idxQ3 - 0.5);
+      ctx.save();
+      ctx.fillStyle = 'rgba(59,107,218,0.05)';
+      ctx.fillRect(x.left, y.top, xQ3 - x.left, y.bottom - y.top);
+      ctx.strokeStyle = '#a0a8c0'; ctx.lineWidth = 1.5;
+      ctx.setLineDash([5,4]);
+      ctx.beginPath(); ctx.moveTo(xQ3, y.top); ctx.lineTo(xQ3, y.bottom); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font = '500 11px Segoe UI, Arial, sans-serif'; ctx.fillStyle = '#7a849e'; ctx.textAlign = 'center';
+      ctx.fillText('Q2 — manutenção de saúde (≥65% CapEx)', x.left + (xQ3 - x.left) / 2, y.top + 14);
+      ctx.fillText('Q3 — meta OpEx ≤ 30%', xQ3 + (x.right - xQ3) / 2, y.top + 14);
+      var yTeto = y.getPixelForValue(TETO);
+      ctx.textAlign = 'right'; ctx.fillStyle = C.opex; ctx.font = '11px Segoe UI, Arial, sans-serif';
+      ctx.fillText('teto mínimo Q2 (65% CapEx)', x.right - 4, yTeto - 5);
+      ctx.restore();
+    }
+  };
+  new Chart(document.getElementById('chartAnual'), {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [
+        {
+          label: '% CapEx', data: pcts,
+          borderColor: C.capex, backgroundColor: C.capexA,
+          pointBackgroundColor: pointBg, pointBorderColor: C.capex,
+          pointBorderWidth: 2, pointRadius: pointRadius, pointHoverRadius: 7,
+          tension: 0.3, fill: true, spanGaps: false, order: 2
+        },
+        {
+          label: 'Teto Q2 (65%)', data: Array(52).fill(TETO),
+          borderColor: '#e05252', borderWidth: 1.5, borderDash: [6,4],
+          pointRadius: 0, backgroundColor: 'transparent', fill: false, order: 3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display:false },
+        tooltip: {
+          filter: function(item){ return item.datasetIndex === 0 && item.raw !== null; },
+          callbacks: {
+            title: function(ctx) {
+              var i = ctx[0].dataIndex, s = semanas[i], e = new Date(s); e.setDate(e.getDate()+6);
+              return (s.getDate()+'').padStart(2,'0') + '/' + ((s.getMonth()+1)+'').padStart(2,'0') + ' – ' +
+                     (e.getDate()+'').padStart(2,'0') + '/' + ((e.getMonth()+1)+'').padStart(2,'0');
+            },
+            label: function(ctx){ return ' CapEx: ' + ctx.raw.toFixed(1) + '%'; }
+          }
+        }
+      },
+      scales: {
+        x: { grid:{ display:false }, ticks:{ autoSkip:false, maxRotation:0, font:{ size:11 } } },
+        y: { min:0, max:100, grid:{ color:C.grid }, ticks:{ stepSize:25, callback: function(v){ return v+'%'; } } }
+      }
+    },
+    plugins: [pluginFundo]
+  });
+})();
+
+// 8. Comparativo OpEx 2025 × 2026 + MM3 + Meta −40%
+(function() {
+  var meses    = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  var opex2025 = [21, 9, 54, 27, 61, 48, 38, 35, 71, 68, 69, 73];
+  var opex2026 = [37, 51, 51, 30.8, 25.7, 13.1, null, null, null, null, null, null];
+
+  function mm3(arr) {
+    return arr.map(function(v, i) {
+      if (v === null) return null;
+      var vals = [];
+      for (var j = Math.max(0, i - 2); j <= i; j++) {
+        if (arr[j] !== null) vals.push(arr[j]);
+      }
+      return vals.length > 0 ? parseFloat((vals.reduce(function(a,b){ return a+b; }, 0) / vals.length).toFixed(1)) : null;
+    });
+  }
+  var mm3_2025 = mm3(opex2025);
+  var mm3_2026 = mm3(opex2026);
+
+  var pluginComp = {
+    id: 'compPlugin',
+    beforeDatasetsDraw: function(chart) {
+      var ctx = chart.ctx, x = chart.scales.x, y = chart.scales.y;
+      if (!x || !y) return;
+      var x0 = x.getPixelForValue(7.5), x1 = x.getPixelForValue(11.5);
+      ctx.save();
+      ctx.fillStyle = 'rgba(59,107,218,0.06)';
+      ctx.fillRect(x0, y.top, x1 - x0, y.bottom - y.top);
+      ctx.strokeStyle = 'rgba(59,107,218,0.25)'; ctx.lineWidth = 1;
+      ctx.setLineDash([4,3]);
+      ctx.beginPath(); ctx.moveTo(x0, y.top); ctx.lineTo(x0, y.bottom); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = '#3b6bda'; ctx.font = '500 10px Segoe UI, Arial, sans-serif'; ctx.textAlign = 'center';
+      ctx.fillText('Período crítico (Set–Dez)', x0 + (x1 - x0) / 2, y.top + 13);
+      ctx.restore();
+    },
+    afterDatasetsDraw: function(chart) {
+      var ctx = chart.ctx, x = chart.scales.x, y = chart.scales.y;
+      if (!x || !y) return;
+      var xMeta0 = x.getPixelForValue(2.5), xMeta1 = x.getPixelForValue(11.5);
+      var yMeta  = y.getPixelForValue(30);
+      ctx.save();
+      ctx.strokeStyle = '#f5a623'; ctx.lineWidth = 2;
+      ctx.setLineDash([8,4]);
+      ctx.beginPath(); ctx.moveTo(xMeta0, yMeta); ctx.lineTo(xMeta1, yMeta); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.font = 'bold 10px Segoe UI, Arial, sans-serif'; ctx.textAlign = 'left';
+      ctx.fillStyle = '#b8720a';
+      ctx.fillText('Meta Q3: ≤30%', xMeta0 + 6, yMeta - 5);
+      ctx.restore();
+    }
+  };
+
+  new Chart(document.getElementById('chartComparativo'), {
+    type: 'line',
+    data: {
+      labels: meses,
+      datasets: [
+        {
+          label: 'OpEx 2025',
+          data: opex2025,
+          borderColor: '#a0a8c0', backgroundColor: 'rgba(160,168,192,0.12)',
+          pointBackgroundColor: '#a0a8c0', pointRadius: 4, pointHoverRadius: 6,
+          tension: 0.35, fill: true, borderDash: [5,3], order: 2
+        },
+        {
+          label: 'OpEx 2026',
+          data: opex2026,
+          borderColor: '#e05252', backgroundColor: 'rgba(224,82,82,0.10)',
+          pointBackgroundColor: opex2026.map(function(v,i){ return i < 3 ? '#e05252' : '#34c759'; }),
+          pointBorderColor:     opex2026.map(function(v,i){ return i < 3 ? '#e05252' : '#34c759'; }),
+          pointRadius: opex2026.map(function(v){ return v !== null ? 5 : 0; }),
+          pointHoverRadius: 7, tension: 0.35, fill: true, spanGaps: false, order: 1
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display:false },
+        tooltip: {
+          mode: 'index', intersect: false,
+          callbacks: {
+            label: function(ctx) {
+              if (ctx.raw === null) return null;
+              var labels = ['OpEx 2025','OpEx 2026'];
+              var fonte = (ctx.datasetIndex === 1) ? (ctx.dataIndex < 3 ? ' (Jira)' : ' (Linear)') : '';
+              return ' ' + labels[ctx.datasetIndex] + fonte + ': ' + ctx.raw.toFixed(1) + '%';
+            }
+          }
+        }
+      },
+      scales: {
+        x: { grid: { display:false } },
+        y: { min:0, max:100, grid:{ color:C.grid }, ticks:{ stepSize:25, callback: function(v){ return v+'%'; } }, title:{ display:true, text:'% OpEx' } }
+      }
+    },
+    plugins: [pluginComp]
+  });
+
+  // Card progresso meta −40%
+  var mesesNomes = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+  // Só meses com dado 2026 real (a partir de Abr = Linear)
+  var mesesMeta = [
+    { idx:3, fonte:'Linear' },
+    { idx:4, fonte:'Linear' },
+    { idx:5, fonte:'Linear' }
+  ];
+
+  // KPI cards: média período disponível
+  var vals26 = mesesMeta.map(function(m){ return opex2026[m.idx]; });
+  var vals25m = mesesMeta.map(function(m){ return opex2025[m.idx]; });
+  var mediaReal = vals26.reduce(function(a,b){return a+b;},0) / vals26.length;
+  var mediaMeta = 30;
+  var mediaRedAlc = (vals25m.reduce(function(a,b){return a+b;},0)/vals25m.length - mediaReal) / (vals25m.reduce(function(a,b){return a+b;},0)/vals25m.length) * 100;
+  var mm3_atual = mm3_2026[5]; // Jun MM3
+
+  var kpiData = [
+    { label:'Média OpEx 2026 (Abr–Jun)', val: mediaReal.toFixed(1)+'%', color:'#e05252' },
+    { label:'Meta Q3 (OpEx ≤30%)', val: mediaMeta.toFixed(1)+'%', color:'#3b6bda' },
+    { label:'Redução média alcançada', val: mediaRedAlc.toFixed(1)+'%', color: mediaRedAlc >= 37.2 ? '#34c759' : '#ff9f0a' },
+    { label:'MM3 atual (Jun)', val: mm3_atual !== null ? mm3_atual.toFixed(1)+'%' : '–', color:'#6c5ce7' },
+    { label:'Meta MM3 Jun/25', val: mm3_2025[5].toFixed(1)+'%', color:'#3b6bda' }
+  ];
+  var kpiDiv = document.getElementById('metaKpis');
+  kpiData.forEach(function(k) {
+    kpiDiv.innerHTML += '<div style="background:#f5f6fa;border-radius:10px;padding:14px 12px;border-left:3px solid '+k.color+'">'+
+      '<div style="font-size:.68rem;text-transform:uppercase;letter-spacing:.07em;color:#7a849e;margin-bottom:5px">'+k.label+'</div>'+
+      '<div style="font-size:1.5rem;font-weight:700;color:'+k.color+'">'+k.val+'</div>'+
+      '</div>';
+  });
+
+  // Tabela
+  var tbody = document.getElementById('metaTableBody');
+  mesesMeta.forEach(function(m) {
+    var v25  = opex2025[m.idx];
+    var v26  = opex2026[m.idx];
+    var meta = 30;
+    var red  = parseFloat(((v25 - v26) / v25 * 100).toFixed(1));
+    var ok   = v26 <= meta;
+    var statusColor = ok ? '#34c759' : '#ff9f0a';
+    var statusBg    = ok ? '#e8f8ed' : '#fff4e0';
+    var statusTxt   = ok ? '✅ Meta atingida' : '⚠️ Abaixo da meta';
+    var redColor    = ok ? '#1a7a35' : '#b36200';
+    tbody.innerHTML +=
+      '<tr style="border-bottom:1px solid #f0f2f6">'+
+      '<td style="padding:9px 12px"><strong>'+mesesNomes[m.idx]+'/26</strong><span style="font-size:.7rem;color:#9aa1b8;margin-left:6px">('+m.fonte+')</span></td>'+
+      '<td style="padding:9px 12px;text-align:center;color:#7a849e">'+v25.toFixed(1)+'%</td>'+
+      '<td style="padding:9px 12px;text-align:center;color:#3b6bda;font-weight:600">≤ '+meta+'%</td>'+
+      '<td style="padding:9px 12px;text-align:center;font-weight:700;color:'+(v26 <= meta ? '#34c759' : '#e05252')+'">'+v26.toFixed(1)+'%</td>'+
+      '<td style="padding:9px 12px;text-align:center;font-weight:700;color:'+redColor+'">'+red.toFixed(1)+'%</td>'+
+      '<td style="padding:9px 12px;text-align:center"><span style="background:'+statusBg+';color:'+statusColor+';border-radius:12px;padding:3px 10px;font-size:.75rem;font-weight:600">'+statusTxt+'</span></td>'+
+      '</tr>';
+  });
+})();
+
+// 8b. Gráfico Redução mensal vs média 2025
+(function() {
+  var baseline = 47.8;
+  var meses = ['Abr/26', 'Mai/26', 'Jun/26'];
+  var opexPct = [30.8, 25.7, 13.1];
+  var reducoes = opexPct.map(function(v) { return +((1 - v / baseline) * 100).toFixed(1); });
+  // [35.6, 46.3, 54.0]
+  var cores = reducoes.map(function(r) { return r >= 37.2 ? '#34c759' : '#ff9f0a'; });
+  var coresBorda = reducoes.map(function(r) { return r >= 37.2 ? '#28a745' : '#e07a00'; });
+
+  var ctx = document.getElementById('chartReducao');
+  if (!ctx) return;
+
+  var chartRed = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: meses,
+      datasets: [{
+        label: '% Redução OpEx vs 2025',
+        data: reducoes,
+        backgroundColor: cores,
+        borderColor: coresBorda,
+        borderWidth: 2,
+        borderRadius: 6,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: { top: 40 } },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            title: function(items) { return meses[items[0].dataIndex]; },
+            label: function(item) {
+              var idx = item.dataIndex;
+              return [
+                'Redução: ' + reducoes[idx].toFixed(1) + '%',
+                'OpEx effort: ' + opexPct[idx].toFixed(1) + '%',
+                'Baseline 2025: ' + baseline + '%'
+              ];
+            }
+          }
+        },
+        annotation: {
+          annotations: {
+            metaLine: {
+              type: 'line',
+              yMin: 37.2,
+              yMax: 37.2,
+              borderColor: '#e05252',
+              borderWidth: 2,
+              borderDash: [6, 4],
+              label: {
+                display: true,
+                content: 'Meta: −37,2%',
+                position: 'end',
+                backgroundColor: 'rgba(224,82,82,0.12)',
+                color: '#e05252',
+                font: { size: 11, weight: '600' },
+                padding: { x: 8, y: 4 }
+              }
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          grid: { display: false },
+          ticks: { font: { size: 13, weight: '600' } }
+        },
+        y: {
+          min: 0,
+          max: 85,
+          ticks: {
+            callback: function(v) { return v + '%'; },
+            font: { size: 11 },
+            stepSize: 20
+          },
+          grid: { color: 'rgba(0,0,0,0.07)' }
+        }
+      }
+    },
+    plugins: [{
+      id: 'barLabels',
+      afterDatasetsDraw: function(chart) {
+        var ctx2 = chart.ctx;
+        chart.data.datasets.forEach(function(dataset, i) {
+          var meta = chart.getDatasetMeta(i);
+          meta.data.forEach(function(bar, idx) {
+            var red = reducoes[idx];
+            var opx = opexPct[idx];
+            var x = bar.x;
+            var yTop = bar.y;
+            ctx2.save();
+            ctx2.textAlign = 'center';
+            ctx2.fillStyle = '#1a1a2e';
+            ctx2.font = 'bold 16px system-ui';
+            ctx2.fillText(red.toFixed(1) + '%', x, yTop - 28);
+            ctx2.font = '11px system-ui';
+            ctx2.fillStyle = '#666';
+            ctx2.fillText('(OpEx: ' + opx.toFixed(1) + '%)', x, yTop - 12);
+            ctx2.restore();
+          });
+        });
+      }
+    }]
+  });
+})();
+
+// 9. Tabela
+(function() {
+  var rows = [
+    { week:'30/03 – 05/04', cls:'CapEx', count:13, total:26, cycle:1.77 },
+    { week:'30/03 – 05/04', cls:'OpEx',  count:13, total:26, cycle:2.23 },
+    { week:'06/04 – 12/04', cls:'CapEx', count:15, total:22, cycle:4.47 },
+    { week:'06/04 – 12/04', cls:'OpEx',  count: 7, total:22, cycle:4.29 },
+    { week:'13/04 – 19/04', cls:'CapEx', count: 9, total:12, cycle:5.00 },
+    { week:'13/04 – 19/04', cls:'OpEx',  count: 3, total:12, cycle:3.00 },
+    { week:'20/04 – 26/04', cls:'CapEx', count:23, total:29, cycle:5.13 },
+    { week:'20/04 – 26/04', cls:'OpEx',  count: 6, total:29, cycle:5.50 },
+    { week:'27/04 – 03/05', cls:'CapEx', count:12, total:17, cycle:3.08 },
+    { week:'27/04 – 03/05', cls:'OpEx',  count: 5, total:17, cycle:5.60 },
+    { week:'04/05 – 10/05', cls:'CapEx', count:14, total:25, cycle:3.50 },
+    { week:'04/05 – 10/05', cls:'OpEx',  count:11, total:25, cycle:3.55 },
+    { week:'11/05 – 17/05', cls:'CapEx', count:12, total:18, cycle:11.08 },
+    { week:'11/05 – 17/05', cls:'OpEx',  count: 6, total:18, cycle: 3.50 },
+    { week:'18/05 – 24/05', cls:'CapEx', count:36, total:53, cycle: 4.56 },
+    { week:'18/05 – 24/05', cls:'OpEx',  count:17, total:53, cycle: 4.12 },
+    { week:'25/05 – 31/05', cls:'CapEx', count:21, total:25, cycle: 1.67 },
+    { week:'25/05 – 31/05', cls:'OpEx',  count: 4, total:25, cycle: 1.50 },
+    { week:'01/06 – 07/06', cls:'CapEx', count:19, total:26, cycle: 2.74 },
+    { week:'01/06 – 07/06', cls:'OpEx',  count: 7, total:26, cycle: 3.29 },
+    { week:'08/06 – 11/06', cls:'CapEx', count:47, total:51, cycle: 5.53 },
+    { week:'08/06 – 11/06', cls:'OpEx',  count: 4, total:51, cycle:16.25 }
+  ];
+  var tbody = document.getElementById('summaryTable');
+  rows.forEach(function(r) {
+    var pct = Math.round(r.count / r.total * 100);
+    var clsKey = r.cls.toLowerCase();
+    var barColor = clsKey === 'capex' ? C.capex : C.opex;
+    tbody.innerHTML += '<tr>' +
+      '<td><strong>' + r.week + '</strong></td>' +
+      '<td><span class="tag ' + clsKey + '">' + r.cls + '</span></td>' +
+      '<td><strong>' + r.count + '</strong> de ' + r.total + '</td>' +
+      '<td><div style="display:flex;align-items:center;gap:8px">' +
+        '<div class="bar-bg" style="flex:1"><div class="bar-fill" style="width:' + pct + '%;background:' + barColor + '"></div></div>' +
+        '<span style="font-size:.75rem;color:#7a849e;min-width:28px">' + pct + '%</span>' +
+      '</div></td>' +
+      '<td>' + r.cycle.toFixed(1) + ' d.u.</td>' +
+    '</tr>';
+  });
+})();
+</script>
+</body>
+</html>
