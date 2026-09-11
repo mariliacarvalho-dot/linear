@@ -133,10 +133,10 @@ footer { text-align: center; padding: 24px; font-size: .75rem; color: #9aa1b8; }
   <div class="header-right">
     <div class="status-pill ok">
       <div class="status-dot"></div>
-      80,5% CapEx acumulado Q3
+      81,3% CapEx acumulado Q3
     </div>
     <div class="badge">
-      <strong>794</strong>
+      <strong>836</strong>
       issues entregues
     </div>
   </div>
@@ -148,28 +148,28 @@ footer { text-align: center; padding: 24px; font-size: .75rem; color: #9aa1b8; }
   <div class="meta-banner">
     <div class="meta-item">
       <div class="meta-label">Última semana</div>
-      <div class="meta-val" style="color:#e05252">44,2%</div>
+      <div class="meta-val" style="color:#e05252">61,9%</div>
       <div class="meta-sub">CapEx · 07/09–13/09</div>
     </div>
     <div class="meta-divider"></div>
     <div class="meta-item">
       <div class="meta-label">Acumulado Q3</div>
-      <div class="meta-val" style="color:#34c759">80,5%</div>
-      <div class="meta-sub">CapEx · 639 issues</div>
+      <div class="meta-val" style="color:#34c759">81,3%</div>
+      <div class="meta-sub">CapEx · 680 issues</div>
     </div>
     <div class="meta-divider"></div>
     <div class="meta-item">
       <div class="meta-label">OpEx acumulado</div>
-      <div class="meta-val" style="color:#e05252">19,5%</div>
-      <div class="meta-sub">OpEx · 155 issues</div>
+      <div class="meta-val" style="color:#e05252">18,7%</div>
+      <div class="meta-sub">OpEx · 156 issues</div>
     </div>
     <div class="meta-divider"></div>
     <div class="meta-goal">
       <h3>🎯 Estratégia de Redução de OpEx — Q3 2026</h3>
       <p>Meta do Q3: manter o OpEx em <strong>≤ 30%</strong> do esforço total. Acompanhe semanalmente a proporção CapEx × OpEx para garantir que o time mantém a saúde necessária para sustentar esse resultado.</p>
       <div class="progress-wrap">
-        <div class="progress-label"><span>CapEx acumulado Q3</span><span style="font-weight:600;color:#34c759">80,5%</span></div>
-        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:80.5%"></div></div>
+        <div class="progress-label"><span>CapEx acumulado Q3</span><span style="font-weight:600;color:#34c759">81,3%</span></div>
+        <div class="progress-bar-bg"><div class="progress-bar-fill" style="width:81.3%"></div></div>
       </div>
     </div>
   </div>
@@ -178,22 +178,22 @@ footer { text-align: center; padding: 24px; font-size: .75rem; color: #9aa1b8; }
   <div class="kpi-row">
     <div class="kpi total">
       <label>Total de Issues</label>
-      <div class="val">794</div>
+      <div class="val">836</div>
       <div class="sub">24 semanas entregues</div>
     </div>
     <div class="kpi capex">
       <label>Total CapEx</label>
-      <div class="val">639</div>
-      <div class="sub">80,5% do total · Feature, Improvement, Spike</div>
+      <div class="val">680</div>
+      <div class="sub">81,3% do total · Feature, Improvement, Spike</div>
     </div>
     <div class="kpi opex">
       <label>Total OpEx</label>
-      <div class="val">155</div>
-      <div class="sub">19,5% do total · Bug, Toil, Security</div>
+      <div class="val">156</div>
+      <div class="sub">18,7% do total · Bug, Toil, Security</div>
     </div>
     <div class="kpi cycle-capex">
       <label>Cycle Time médio CapEx</label>
-      <div class="val">5,0<span style="font-size:1rem;font-weight:400"> d.u.</span></div>
+      <div class="val">4,9<span style="font-size:1rem;font-weight:400"> d.u.</span></div>
       <div class="sub">dias úteis por issue</div>
     </div>
     <div class="kpi cycle-opex">
@@ -329,19 +329,19 @@ footer { text-align: center; padding: 24px; font-size: .75rem; color: #9aa1b8; }
 
 </div>
 
-<footer>Dashboard atualizado em 11/09/2026 · Dados: cycle_time.xlsx · Classificação: Feature / Improvement / Spike = CapEx | Bug / Toil / Security = OpEx · 44 issues pendentes de classificação não computadas</footer>
+<footer>Dashboard atualizado em 11/09/2026 · Dados: cycle_time.xlsx · Classificação: Feature / Improvement / Spike = CapEx | Bug / Toil / Security = OpEx · 2 issues pendentes de classificação não computadas</footer>
 
 <script>
 const DATA = {
   weeks:    ["30/03–05/04","06/04–12/04","13/04–19/04","20/04–26/04","27/04–03/05","04/05–10/05","11/05–17/05","18/05–24/05","25/05–31/05","01/06–07/06","08/06–14/06","15/06–21/06","22/06–28/06","29/06–05/07","06/07–12/07","13/07–19/07","20/07–26/07","27/07–02/08","03/08–09/08","10/08–16/08","17/08–23/08","24/08–30/08","31/08–06/09","07/09–13/09"],
-  capex:    [13, 15,  9, 23, 12, 14, 12, 37, 21, 19, 59, 53, 24, 47, 17, 16, 58, 20, 21, 31, 28, 29, 42, 19],
-  opex:     [13,  7,  3,  6,  5, 11,  6, 16,  4,  7,  8,  4,  0,  0,  2,  0,  1,  2,  5,  6,  8, 12,  5, 24],
-  ct_capex: [1.77, 4.47, 5.00, 5.13, 3.08, 3.50, 11.08, 4.43, 1.67, 2.74, 4.75, 3.17, 2.00, 4.09, 7.71, 9.56, 5.91, 3.40, 10.48, 6.52, 8.14, 4.72, 4.60, 5.16],
-  ct_opex:  [2.23, 4.29, 3.00, 5.50, 5.60, 3.55,  3.50, 4.12, 1.50, 3.29,  9.50, 2.75, 0, 0, 3.00, 0, 3.00, 3.00, 3.20, 1.83, 2.62, 3.50, 1.60, 3.08],
+  capex:    [13, 15,  9, 23, 12, 14, 12, 37, 22, 21, 59, 54, 27, 48, 17, 17, 58, 20, 21, 34, 29, 30, 49, 39],
+  opex:     [13,  7,  3,  6,  6, 11,  6, 16,  4,  7,  8,  4,  0,  0,  2,  0,  1,  2,  5,  6,  8, 12,  5, 24],
+  ct_capex: [1.77, 4.47, 5.00, 5.13, 3.08, 3.50, 11.08, 4.43, 1.68, 2.95, 4.75, 3.15, 2.04, 4.15, 7.71, 9.65, 5.91, 3.40, 10.48, 6.82, 7.97, 4.70, 4.27, 4.00],
+  ct_opex:  [2.23, 4.29, 3.00, 5.50, 4.67, 3.55,  3.50, 4.12, 1.50, 3.29,  9.50, 2.75, 0, 0, 3.00, 0, 3.00, 3.00, 3.20, 1.83, 2.62, 3.50, 1.60, 3.08],
   products: {
     names: ["Customizador","Gestor – Estante","Árvore de coleções","GURL do COC","Gestor – Geral","ShortURL do SAS"],
-    capex: [149, 262, 146, 0, 59, 0],
-    opex:  [ 69,  26,  31, 5,  7, 3]
+    capex: [153, 268, 153, 0, 59, 0],
+    opex:  [ 69,  26,  32, 5,  7, 3]
   }
 };
 
@@ -443,7 +443,7 @@ new Chart(document.getElementById('chartTipo'), {
     labels: ['Improvement','Bug','Feature','Security','Spike','Toil'],
     datasets: [{
       label: 'Issues',
-      data: [436, 111, 195, 13, 8, 31],
+      data: [448, 112, 224, 13, 8, 31],
       backgroundColor: [C.capex, C.opex, C.capex, C.opex, C.capex, C.opex],
       borderRadius: 3
     }]
@@ -476,8 +476,8 @@ new Chart(document.getElementById('chartProduct'), {
 new Chart(document.getElementById('chartDonut'), {
   type: 'doughnut',
   data: {
-    labels: ['CapEx (80,5%)', 'OpEx (19,5%)'],
-    datasets: [{ data: [639, 155], backgroundColor: [C.capex, C.opex], borderWidth:2, borderColor:'#fff', hoverOffset:8 }]
+    labels: ['CapEx (81,3%)', 'OpEx (18,7%)'],
+    datasets: [{ data: [680, 156], backgroundColor: [C.capex, C.opex], borderWidth:2, borderColor:'#fff', hoverOffset:8 }]
   },
   options: {
     responsive: true, cutout:'68%',
@@ -500,10 +500,10 @@ new Chart(document.getElementById('chartDonut'), {
     '2026-05-04': 56.0,
     '2026-05-11': 66.7,
     '2026-05-18': 69.8,
-    '2026-05-25': 84.0,
-    '2026-06-01': 73.1,
+    '2026-05-25': 84.6,
+    '2026-06-01': 75.0,
     '2026-06-08': 88.1,
-    '2026-06-15': 93.0,
+    '2026-06-15': 93.1,
     '2026-06-22': 100.0,
     '2026-06-29': 100.0,
     '2026-07-06': 89.5,
@@ -511,11 +511,11 @@ new Chart(document.getElementById('chartDonut'), {
     '2026-07-20': 98.3,
     '2026-07-27': 90.9,
     '2026-08-03': 80.8,
-    '2026-08-10': 83.8,
-    '2026-08-17': 77.8,
-    '2026-08-24': 70.7,
-    '2026-08-31': 89.4,
-    '2026-09-07': 44.2
+    '2026-08-10': 85.0,
+    '2026-08-17': 78.4,
+    '2026-08-24': 71.4,
+    '2026-08-31': 90.7,
+    '2026-09-07': 61.9
   };
   const hoje = new Date(2026, 8, 10);
   var semanas = [], labels = [], pcts = [], pointRadius = [], pointBg = [];
@@ -603,7 +603,7 @@ new Chart(document.getElementById('chartDonut'), {
 (function() {
   var meses    = ['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
   var opex2025 = [21, 9, 54, 27, 61, 48, 38, 35, 71, 68, 69, 73];
-  var opex2026 = [37, 51, 51, 30.8, 25.7, 13.3, 10.0, 9.2, 32.5, null, null, null];
+  var opex2026 = [37, 51, 51, 30.8, 25.7, 13.3, 10.0, 8.9, 25.3, null, null, null];
 
   function mm3(arr) {
     return arr.map(function(v, i) {
@@ -760,7 +760,7 @@ new Chart(document.getElementById('chartDonut'), {
 (function() {
   var baseline = 47.8;
   var meses = ['Abr/26', 'Mai/26', 'Jun/26', 'Jul/26', 'Ago/26'];
-  var opexPct = [30.8, 25.7, 13.3, 2.0, 9.2];
+  var opexPct = [30.8, 25.7, 13.3, 2.0, 8.9];
   var reducoes = opexPct.map(function(v) { return +((1 - v / baseline) * 100).toFixed(1); });
   // [35.6, 46.3, 54.0]
   var cores = reducoes.map(function(r) { return r >= 37.2 ? '#34c759' : '#ff9f0a'; });
@@ -900,16 +900,16 @@ new Chart(document.getElementById('chartDonut'), {
     { week:'27/07 – 02/08', cls:'OpEx',  count: 2, total:22, cycle: 3.00 },
     { week:'03/08 – 09/08', cls:'CapEx', count:21, total:26, cycle:10.48 },
     { week:'03/08 – 09/08', cls:'OpEx',  count: 5, total:26, cycle: 3.20 },
-    { week:'10/08 – 16/08', cls:'CapEx', count:31, total:37, cycle: 6.52 },
-    { week:'10/08 – 16/08', cls:'OpEx',  count: 6, total:37, cycle: 1.83 },
-    { week:'17/08 – 23/08', cls:'CapEx', count:28, total:36, cycle: 8.14 },
-    { week:'17/08 – 23/08', cls:'OpEx',  count: 8, total:36, cycle: 2.62 },
-    { week:'24/08 – 30/08', cls:'CapEx', count:29, total:41, cycle: 4.72 },
-    { week:'24/08 – 30/08', cls:'OpEx',  count:12, total:41, cycle: 3.50 },
-    { week:'31/08 – 06/09', cls:'CapEx', count:42, total:47, cycle: 4.60 },
-    { week:'31/08 – 06/09', cls:'OpEx',  count: 5, total:47, cycle: 1.60 },
-    { week:'07/09 – 13/09', cls:'CapEx', count:19, total:43, cycle: 5.16 },
-    { week:'07/09 – 13/09', cls:'OpEx',  count:24, total:43, cycle: 3.08 }
+    { week:'10/08 – 16/08', cls:'CapEx', count:34, total:40, cycle: 6.82 },
+    { week:'10/08 – 16/08', cls:'OpEx',  count: 6, total:40, cycle: 1.83 },
+    { week:'17/08 – 23/08', cls:'CapEx', count:29, total:37, cycle: 7.97 },
+    { week:'17/08 – 23/08', cls:'OpEx',  count: 8, total:37, cycle: 2.62 },
+    { week:'24/08 – 30/08', cls:'CapEx', count:30, total:42, cycle: 4.70 },
+    { week:'24/08 – 30/08', cls:'OpEx',  count:12, total:42, cycle: 3.50 },
+    { week:'31/08 – 06/09', cls:'CapEx', count:49, total:54, cycle: 4.27 },
+    { week:'31/08 – 06/09', cls:'OpEx',  count: 5, total:54, cycle: 1.60 },
+    { week:'07/09 – 13/09', cls:'CapEx', count:39, total:63, cycle: 4.00 },
+    { week:'07/09 – 13/09', cls:'OpEx',  count:24, total:63, cycle: 3.08 }
   ];
   var tbody = document.getElementById('summaryTable');
   rows.forEach(function(r) {
